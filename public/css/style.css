@@ -1,0 +1,136 @@
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    color: #333;
+  }
+  
+  header {
+    background: #2c3e50;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+  }
+  
+  .filters {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f4f4f4;
+    margin-bottom: 1rem;
+  }
+  
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .items-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .item-card {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  
+  .item-image {
+    height: 200px;
+    background: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .item-image img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  
+  .no-image {
+    color: #777;
+  }
+  
+  .item-details {
+    padding: 1rem;
+  }
+  
+  .item-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0.5rem 0;
+    flex-wrap: wrap;
+  }
+  
+  .type.found {
+    background: #2ecc71;
+    color: white;
+  }
+  
+  .type.lost {
+    background: #e74c3c;
+    color: white;
+  }
+  
+  .category {
+    padding: 0.2rem 0.5rem;
+    background: #f1f1f1;
+    border-radius: 3px;
+    font-size: 0.8rem;
+    border: 2px solid black;
+  }
+    
+  footer {
+    text-align: center;
+    padding: 1rem;
+    background: #2c3e50;
+    color: white;
+  }
+
+.item-card {
+  transition: all 0.3s ease-out;
+}
+
+.highlight {
+  background-color: #ffeb3b;
+  padding: 0 2px;
+  border-radius: 2px;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.type-switcher {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 4px;
+  border: 2px solid black;
+}
+
+.type-btn {
+  border: none;
+  padding: 8px 16px;
+  background: none;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.type-btn.active {
+  background: #2c3e50;
+  color: white;
+  font-weight: 500;
+  border: 2px solid black;
+}
+
+#no-results-message {
+  text-align: center;
+  padding: 40px;
+  font-size: 18px;
+  margin-top: 20px;
+}

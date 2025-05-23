@@ -1,0 +1,69 @@
+<%- include('partials/header') %>
+
+<section class="filters">
+  <div class="type-switcher">
+    <button class="type-btn" data-type="found">Найденные</button>
+    <button class="type-btn" data-type="lost">Потерянные</button>
+  </div>
+
+  <div class="filter-group">
+    <input 
+      type="text" 
+      id="search-input" 
+      placeholder="Поиск" 
+      autocomplete="off"
+    >
+  </div>
+
+  <div class="filter-group">
+    <label for="city-filter">Город:</label>
+    <select id="city-filter">
+      <option value="all">Все</option>
+      <option value="Альметьевск">Альметьевск</option>
+      <option value="Казань">Казань</option>
+      <option value="Москва">Москва</option>
+      <option value="Санкт-Петербург">Санкт-Петербург</option>
+    </select>
+  </div>
+  
+  <div class="filter-group">
+    <label for="category-filter">Категория:</label>
+    <select id="category-filter">
+      <option value="all">Все</option>
+      <option value="драгоценность">Драгоценности</option>
+      <option value="электроника">Электроника</option>
+      <option value="документ">Документы</option>
+      <option value="одежда">Одежда</option>
+      <option value="другое">Другое</option>
+    </select>
+  </div>
+</section>
+<div id="no-results-message" style="display: none;">
+  <p>Ничего не найдено. Попробуйте изменить параметры поиска.</p>
+</div>
+
+<div class="items-container">
+  <% items.forEach(item => { %>
+    <div class="item-card" data-type="<%= item.type %>" data-city="<%= item.city %>" data-category="<%= item.category %>">
+      <div class="item-image">
+        <% if (item.photo_path) { %>
+          <img src="<%= item.photo_path %>" alt="<%= item.title %>">
+        <% } else { %>
+          <div class="no-image">Нет фото</div>
+        <% } %>
+      </div>
+      <div class="item-details">
+        <h3><%= item.title %></h3>
+        <p class="item-meta">
+          <span class="category"><%= item.city %></span>
+          <span class="category"><%= item.category %></span>
+        </p>
+        <p><strong>Место:</strong> <%= item.location || 'Не указано' %></p>
+        <p><strong>Дата:</strong> <%= new Date(item.date).toLocaleDateString() %></p>
+        <p><strong>Срок хранения до:</strong> <%= new Date(item.storage_days).toLocaleDateString() %></p>
+      </div>
+    </div>
+  <% }); %>
+</div>
+
+<%- include('partials/footer') %>
