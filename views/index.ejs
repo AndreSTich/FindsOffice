@@ -37,7 +37,12 @@
       <option value="другое">Другое</option>
     </select>
   </div>
+
+  <div class="filter-group">
+    <button id="publish-btn" class="publish-button">Опубликовать</button>
+  </div>
 </section>
+
 <div id="no-results-message" style="display: none;">
   <p>Ничего не найдено. Попробуйте изменить параметры поиска.</p>
 </div>
@@ -52,7 +57,7 @@
       
       <div class="item-image">
         <% if (item.photo_path) { %>
-          <img src="<%= item.photo_path %>" alt="<%= item.title %>">
+          <img src="/uploads/<%= item.photo_path %>" alt="<%= item.title %>" class="item-photo">
         <% } else { %>
           <div class="no-image">Нет фото</div>
         <% } %>
@@ -76,16 +81,15 @@
     <span class="close">&times;</span>
     <div class="modal-grid">
       <div class="modal-image-container">
-        <img id="modal-image" src="" alt="Фото предмета">
+        <img id="modal-image" src="" alt="Фото предмета" class="modal-photo">
       </div>
       <div class="modal-info">
         <h2 id="modal-title"></h2>
         <p><strong>Город:</strong> <span id="modal-city"></span></p>
         <p><strong>Место:</strong> <span id="modal-location"></span></p>
         <p><strong>Дата:</strong> <span id="modal-date"></span></p>
-        <p><strong>Срок хранения:</strong> <span id="modal-storage"></span></p>
         <p><strong>Описание:</strong> <span id="modal-description"></span></p>
-        <button id="respond-btn" class="respond-button">Откликнуться</button>
+        <button id="respond-btn" class="respond-button"></button>
       </div>
     </div>
   </div>

@@ -1,3 +1,7 @@
+$('#publish-btn').click(function() {
+  window.location.href = '/publish';
+});
+
 $(document).ready(function() {
   let currentType = 'all';
   
@@ -76,17 +80,26 @@ $(document).on('click', '.item-card', function() {
     location: $card.find('p:contains("Место:")').text().replace('Место: ', ''),
     date: $card.find('p:contains("Дата:")').text().replace('Дата: ', ''),
     storage: $card.find('p:contains("Срок хранения до:")').text().replace('Срок хранения до: ', ''),
-    description: $card.data('description'), // Получаем описание из data-атрибута
-    photo: $card.find('img').attr('src') || ''
+    description: $card.data('description'),
+    photo: $card.find('img').attr('src') || '',
+    type: $card.data('type')
   };
 
+  // Заполняем модальное окно
   $('#modal-title').text(itemData.title);
   $('#modal-city').text(itemData.city);
   $('#modal-location').text(itemData.location || 'Не указано');
   $('#modal-date').text(itemData.date);
-  $('#modal-storage').text(itemData.storage);
   $('#modal-description').text(itemData.description || 'Описание отсутствует');
   
+  const respondBtn = $('#respond-btn');
+  if (itemData.type === 'found') {
+    respondBtn.text('Откликнуться').removeClass('lost').addClass('found');
+  } else if (itemData.type === 'lost') {
+    respondBtn.text('Сообщить о находке').removeClass('found').addClass('lost');
+  }
+
+  // Обработка изображения
   if (itemData.photo) {
     $('#modal-image').attr('src', itemData.photo).show();
   } else {
@@ -95,6 +108,7 @@ $(document).on('click', '.item-card', function() {
 
   $('#item-modal').fadeIn();
 });
+
 
 $('.close').click(function() {
   $('#item-modal').fadeOut();
@@ -108,5 +122,46 @@ $(window).click(function(event) {
 
 $('#respond-btn').click(function() {
   const itemTitle = $('#modal-title').text();
-  alert(`Вы откликнулись на предмет: ${itemTitle}`);
+  const btnText = $(this).text();
+  
+  if (btnText === 'Откликнуться') {
+    alert(`Вы откликнулись на найденный предмет: ${itemTitle}`);
+  } else if (btnText === 'Сообщить о находке') {
+    alert(`Вы сообщили о находке потерянного предмета: ${itemTitle}`);
+  }
+});
+
+$(document).ready(function() {
+  $('#photo-preview').click(function() {
+    $('#photo-input').trigger('click');
+  });
+
+  $('#photo-input').on('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const $fileNameElement = $('#file-name');
+  if ($fileNameElement.length === 0) {
+    console.error('Элемент #file-name не найден в DOM!');
+    return;
+  }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const scaleMode = this.width > this.height ? 'auto 100%' : '100% auto';
+        
+        $('#photo-preview').css({
+          'background-image': 'url(' + e.target.result + ')',
+          'background-size': scaleMode,
+          'background-repeat': 'no-repeat'
+        });
+        $('#photo-placeholder').hide();
+      }
+      img.src = e.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
 });

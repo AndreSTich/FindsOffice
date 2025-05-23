@@ -1,0 +1,90 @@
+<%- include('partials/header') %>
+
+<body class="publish-page">
+<div class="publish-container">
+  <h2>Заявка на публикации утерянной вещи</h2>
+  <form id="publish-form" method="POST" action="/publish">
+    <div class="form-group">
+      <label for="title">Название:</label>
+      <input type="text" id="title" name="title" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="description">Описание:</label>
+      <textarea id="description" name="description" rows="4" required></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="city">Город:</label>
+      <select id="city" name="city" required>
+        <option value="Альметьевск">Альметьевск</option>
+        <option value="Казань">Казань</option>
+        <option value="Москва">Москва</option>
+        <option value="Санкт-Петербург">Санкт-Петербург</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="location">Местонахождение:</label>
+      <input type="text" id="location" name="location" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="date">Дата:</label>
+      <input type="date" id="date" name="date" required>
+    </div>
+    
+    <div class="form-group">
+      <label for="photo">Фото:</label>
+      <div id="photo-preview" style="
+        width: 200px;
+        height: 200px;
+        border: 2px dashed #ccc;
+        background-size: cover;
+        background-position: center;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;">
+        <span id="photo-placeholder">Нажмите для выбора фото</span>
+      </div>
+      <input 
+        type="file" 
+        id="photo-input" 
+        name="photo" 
+        accept="image/*" 
+        style="display: none;"
+        required
+      >
+    </div>
+    
+    <div class="form-group">
+      <label for="category">Категория:</label>
+      <select id="category" name="category" required>
+        <option value="драгоценность">Драгоценности</option>
+        <option value="электроника">Электроника</option>
+        <option value="документ">Документы</option>
+        <option value="одежда">Одежда</option>
+        <option value="другое">Другое</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label>Тип:</label>
+      <div>
+        <label>
+          <input type="radio" name="type" value="found" checked> Найденные
+        </label>
+        <label>
+          <input type="radio" name="type" value="lost"> Потерянные
+        </label>
+      </div>
+    </div>
+    
+    <button type="submit" class="publish-page-button">Опубликовать</button>
+  </form>
+</div>
+</body>
+
+<%- include('partials/footer') %>
