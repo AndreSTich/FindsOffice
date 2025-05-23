@@ -11,7 +11,7 @@
     
     <div class="form-group">
       <label for="description">Описание:</label>
-      <textarea id="description" name="description" rows="4" required></textarea>
+      <textarea id="description" name="description" rows="4"></textarea>
     </div>
     
     <div class="form-group">
@@ -26,7 +26,7 @@
     
     <div class="form-group">
       <label for="location">Местонахождение:</label>
-      <input type="text" id="location" name="location" required>
+      <input type="text" id="location" name="location">
     </div>
     
     <div class="form-group">
@@ -36,27 +36,10 @@
     
     <div class="form-group">
       <label for="photo">Фото:</label>
-      <div id="photo-preview" style="
-        width: 200px;
-        height: 200px;
-        border: 2px dashed #ccc;
-        background-size: cover;
-        background-position: center;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 10px;">
-        <span id="photo-placeholder">Нажмите для выбора фото</span>
+      <div id="photo-preview" class="publish-photo">
+        <span id="photo-placeholder">Здесь будет фото</span>
       </div>
-      <input 
-        type="file" 
-        id="photo-input" 
-        name="photo" 
-        accept="image/*" 
-        style="display: none;"
-        required
-      >
+      <input type="file" id="photo-input" name="photo" accept="image/*">
     </div>
     
     <div class="form-group">

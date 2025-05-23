@@ -3,7 +3,6 @@ const express = require('express');
 const { Sequelize, DataTypes } = require('sequelize');
 const path = require('path');
 const app = express();
-const fs = require('fs');
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));

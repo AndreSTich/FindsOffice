@@ -251,3 +251,14 @@ body.publish-page {
   margin-left: 510px;
   width: 250px;
 }
+
+.publish-photo {
+  width: 400px;
+  height: 200px;
+  border: 1px dashed #ccc;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}

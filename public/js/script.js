@@ -139,27 +139,36 @@ $(document).ready(function() {
   $('#photo-input').on('change', function() {
     const file = this.files[0];
     if (!file) return;
-    const $fileNameElement = $('#file-name');
-  if ($fileNameElement.length === 0) {
-    console.error('Элемент #file-name не найден в DOM!');
-    return;
-  }
+
+    // Проверяем, является ли файл изображением
+    if (!file.type.match('image.*')) {
+      alert('Пожалуйста, выберите файл изображения');
+      return;
+    }
 
     const reader = new FileReader();
 
     reader.onload = function(e) {
       const img = new Image();
       img.onload = function() {
-        const scaleMode = this.width > this.height ? 'auto 100%' : '100% auto';
+        const scaleMode = this.width > this.height ? 'cover' : 'contain';
         
         $('#photo-preview').css({
           'background-image': 'url(' + e.target.result + ')',
           'background-size': scaleMode,
-          'background-repeat': 'no-repeat'
+          'background-repeat': 'no-repeat',
+          'background-position': 'center center'
         });
         $('#photo-placeholder').hide();
-      }
+      };
+      img.onerror = function() {
+        alert('Ошибка загрузки изображения');
+      };
       img.src = e.target.result;
+    };
+
+    reader.onerror = function() {
+      alert('Ошибка при чтении файла');
     };
 
     reader.readAsDataURL(file);
