@@ -44,7 +44,12 @@
 
 <div class="items-container">
   <% items.forEach(item => { %>
-    <div class="item-card" data-type="<%= item.type %>" data-city="<%= item.city %>" data-category="<%= item.category %>">
+    <div class="item-card" 
+         data-type="<%= item.type %>" 
+         data-city="<%= item.city %>" 
+         data-category="<%= item.category %>"
+         data-description="<%= item.description %>">
+      
       <div class="item-image">
         <% if (item.photo_path) { %>
           <img src="<%= item.photo_path %>" alt="<%= item.title %>">
@@ -52,6 +57,7 @@
           <div class="no-image">Нет фото</div>
         <% } %>
       </div>
+      
       <div class="item-details">
         <h3><%= item.title %></h3>
         <p class="item-meta">
@@ -60,10 +66,29 @@
         </p>
         <p><strong>Место:</strong> <%= item.location || 'Не указано' %></p>
         <p><strong>Дата:</strong> <%= new Date(item.date).toLocaleDateString() %></p>
-        <p><strong>Срок хранения до:</strong> <%= new Date(item.storage_days).toLocaleDateString() %></p>
       </div>
     </div>
   <% }); %>
+</div>
+
+<div id="item-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <div class="modal-grid">
+      <div class="modal-image-container">
+        <img id="modal-image" src="" alt="Фото предмета">
+      </div>
+      <div class="modal-info">
+        <h2 id="modal-title"></h2>
+        <p><strong>Город:</strong> <span id="modal-city"></span></p>
+        <p><strong>Место:</strong> <span id="modal-location"></span></p>
+        <p><strong>Дата:</strong> <span id="modal-date"></span></p>
+        <p><strong>Срок хранения:</strong> <span id="modal-storage"></span></p>
+        <p><strong>Описание:</strong> <span id="modal-description"></span></p>
+        <button id="respond-btn" class="respond-button">Откликнуться</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <%- include('partials/footer') %>

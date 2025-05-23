@@ -3,11 +3,9 @@ const express = require('express');
 const { Sequelize, DataTypes } = require('sequelize');
 const app = express();
 
-// Настройка EJS
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
-// Подключение к БД
 const sequelize = new Sequelize(
   process.env.DB_NAME,
   process.env.DB_USER,
@@ -18,10 +16,8 @@ const sequelize = new Sequelize(
   }
 );
 
-// Импорт модели
 const Item = require('./models/Item')(sequelize, DataTypes);
 
-// Маршрут для главной страницы
 app.get('/', async (req, res) => {
   try {
     const items = await Item.findAll();
@@ -32,7 +28,6 @@ app.get('/', async (req, res) => {
   }
 });
 
-// Запуск сервера
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Сервер запущен на порту ${PORT}`);

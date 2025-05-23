@@ -1,7 +1,6 @@
 $(document).ready(function() {
   let currentType = 'all';
   
-  // Инициализация переключателя
   $('.type-btn').click(function() {
     $('.type-btn').removeClass('active');
     $(this).addClass('active');
@@ -9,7 +8,6 @@ $(document).ready(function() {
     applyFilters();
   });
 
-  // Обработчики для всех фильтров
   $('#city-filter, #category-filter').on('change', applyFilters);
   $('#search-input').on('input', applyFilters);
 
@@ -29,7 +27,6 @@ $(document).ready(function() {
       const title = $card.find('h3').text().toLowerCase();
       const description = $card.find('.description').text().toLowerCase();
       
-      // Проверка всех условий фильтрации
       const typeMatch = currentType === 'all' || itemType === currentType;
       const cityMatch = cityFilter === 'all' || itemCity === cityFilter;
       const categoryMatch = categoryFilter === 'all' || itemCategory === categoryFilter;
@@ -40,7 +37,6 @@ $(document).ready(function() {
       const isVisible = typeMatch && cityMatch && categoryMatch && searchMatch;
       $card.toggle(isVisible);
       
-      // Подсветка результатов поиска
       if (searchText) {
         highlightMatches($card, searchText);
       } else {
@@ -50,11 +46,9 @@ $(document).ready(function() {
       if (isVisible) hasVisibleItems = true;
     });
     
-    // Показываем сообщение, если ничего не найдено
     $('#no-results-message').toggle(!hasVisibleItems);
   }
   
-  // Функция подсветки совпадений
   function highlightMatches($element, searchText) {
     ['h3', '.description'].forEach(selector => {
       $element.find(selector).each(function() {
@@ -69,6 +63,50 @@ $(document).ready(function() {
     });
   }
   
-  // Применяем фильтры при загрузке страницы
   applyFilters();
+});
+
+$(document).on('click', '.item-card', function() {
+  const $card = $(this);
+  
+  const itemData = {
+    title: $card.find('h3').text(),
+    city: $card.data('city'),
+    category: $card.data('category'),
+    location: $card.find('p:contains("Место:")').text().replace('Место: ', ''),
+    date: $card.find('p:contains("Дата:")').text().replace('Дата: ', ''),
+    storage: $card.find('p:contains("Срок хранения до:")').text().replace('Срок хранения до: ', ''),
+    description: $card.data('description'), // Получаем описание из data-атрибута
+    photo: $card.find('img').attr('src') || ''
+  };
+
+  $('#modal-title').text(itemData.title);
+  $('#modal-city').text(itemData.city);
+  $('#modal-location').text(itemData.location || 'Не указано');
+  $('#modal-date').text(itemData.date);
+  $('#modal-storage').text(itemData.storage);
+  $('#modal-description').text(itemData.description || 'Описание отсутствует');
+  
+  if (itemData.photo) {
+    $('#modal-image').attr('src', itemData.photo).show();
+  } else {
+    $('#modal-image').hide();
+  }
+
+  $('#item-modal').fadeIn();
+});
+
+$('.close').click(function() {
+  $('#item-modal').fadeOut();
+});
+
+$(window).click(function(event) {
+  if ($(event.target).is('#item-modal')) {
+    $('#item-modal').fadeOut();
+  }
+});
+
+$('#respond-btn').click(function() {
+  const itemTitle = $('#modal-title').text();
+  alert(`Вы откликнулись на предмет: ${itemTitle}`);
 });
