@@ -1,0 +1,82 @@
+<%- include('partials/header') %>
+
+<div class="requests-container">
+  <h1>Мои отклики</h1>
+  
+  <div class="requests-list">
+    <% responses.forEach(response => { %>
+      <div class="response-card" data-id="<%= response.id %>"      data-id="<%= response.id %>" data-location="<%= response.Item.location %>" data-description="<%= response.Item.description %>">
+        <div class="request-content">
+          <div class="request-image">
+            <% if (response.Item.photo_path) { %>
+              <img src="/uploads/<%= response.Item.photo_path %>" alt="<%= response.Item.title %>">
+            <% } else { %>
+              <div class="no-image">Нет фото</div>
+            <% } %>
+          </div>
+          
+          <div class="request-info">
+            <p style="font-size: 20px; font-weight: bold;"><%= response.Item.title %></p>
+            <p class="request-status <%= response.status %>" style="font-size: 16px; font-weight: bold;"> Статус: <%= response.status %></p>
+            <p style="font-size: 18px;"><b>Город:</b> <%= response.Item.city %></p>
+            <p style="font-size: 18px;"><b>Дата:</b> <%= new Date(response.Item.date).toLocaleDateString('ru-RU') %></p>
+          </div>
+        </div>
+        
+        <div class="request-actions">
+          <button class="edit-btn" data-id="<%= response.id %>">Редактировать</button>
+          <button class="delete-btn" data-id="<%= response.id %>">Удалить</button>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+</div>
+
+<div id="sidebar-menu" class="sidebar">
+    <div class="user-info">
+      <div style="font-size: 20px;"><b><%= user.lastName %> <%= user.firstName %></b></div>
+      <div style="font-size: 14px; color: gray">Логин: <%= user.login %></div>
+    </div>
+    
+    <nav class="sidebar-nav">
+      <a href="/" class="sidebar-link">Главная страница</a>
+      <a href="/responses" class="sidebar-link">Отклики</a>
+      <a href="/requests" class="sidebar-link">Заявки</a>
+    </nav>
+  </div>
+  
+  <button id="menu-toggle" class="menu-toggle">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+<div id="response-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div class="modal-grid">
+        <div class="modal-image-container">
+          <img id="modal-image" src="" alt="Фото предмета" class="modal-photo">
+        </div>
+        <div class="modal-info">
+          <h2 id="modal-title"></h2>
+          <p><strong>Город:</strong> <span id="modal-city"></span></p>
+          <p><strong>Место:</strong> <span id="modal-location"></span></p>
+          <p><strong>Дата:</strong> <span id="modal-date"></span></p>
+          <p><strong>Описание:</strong> <span id="modal-description"></span></p>
+          
+          <div class="user-section">
+            <p class="proof">Моя информация</p>
+            <div id="modal-proof-text" class="proof-text"></div>
+            
+            <p class="proof">Прикрепленные файлы</p>
+            <div id="modal-files-list" class="files-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+<%- include('partials/footer') %>

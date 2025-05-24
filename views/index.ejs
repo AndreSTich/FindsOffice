@@ -43,6 +43,25 @@
   </div>
 </section>
 
+<div id="sidebar-menu" class="sidebar">
+  <div class="user-info">
+    <div style="font-size: 20px;"><b><%= user.lastName %> <%= user.firstName %></b></div>
+    <div style="font-size: 14px; color: gray">Логин: <%= user.login %></div>
+  </div>
+  
+  <nav class="sidebar-nav">
+    <a href="/" class="sidebar-link">Главная страница</a>
+    <a href="/responses" class="sidebar-link">Отклики</a>
+    <a href="/requests" class="sidebar-link">Заявки</a>
+  </nav>
+</div>
+
+<button id="menu-toggle" class="menu-toggle">
+  <span></span>
+  <span></span>
+  <span></span>
+</button>
+
 <div id="no-results-message" style="display: none;">
   <p>Ничего не найдено. Попробуйте изменить параметры поиска.</p>
 </div>
