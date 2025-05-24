@@ -2,11 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const { Sequelize, DataTypes } = require('sequelize');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
-app.use(express.urlencoded({ extended: true })); // Для обработки данных формы
+app.use(express.urlencoded({ extended: true }));
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -20,6 +21,18 @@ const sequelize = new Sequelize(
 
 const Item = require('./models/Item')(sequelize, DataTypes);
 const Request = require('./models/Request')(sequelize, DataTypes);
+const Response = require('./models/Response')(sequelize, DataTypes);
+const Proof = require('./models/Proof')(sequelize, DataTypes);
+
+// Установка ассоциаций
+Item.hasMany(Request, { foreignKey: 'item_id' });
+Request.belongsTo(Item, { foreignKey: 'item_id' });
+
+Item.hasMany(Response, { foreignKey: 'item_id' });
+Response.belongsTo(Item, { foreignKey: 'item_id' });
+
+Response.hasMany(Proof, { foreignKey: 'response_id' });
+Proof.belongsTo(Response, { foreignKey: 'response_id' });
 
 // Главная страница (показывает только одобренные заявки)
 app.get('/', async (req, res) => {
@@ -42,11 +55,10 @@ app.get('/publish', (req, res) => {
   res.render('publish');
 });
 
+
 app.post('/publish', async (req, res) => {
   try {
-    const { title, description, city, location, date, photo, category, type } = req.body;
-
-    const photo_path = photo ? photo.replace(/\\/g, '/') : null;
+    const { title, description, city, location, date, category, type } = req.body;
 
     const item = await Item.create({
       title,
@@ -54,7 +66,6 @@ app.post('/publish', async (req, res) => {
       city,
       location,
       date,
-      photo_path,
       category,
       type,
       status: 'на рассмотрении',
@@ -73,7 +84,54 @@ app.post('/publish', async (req, res) => {
   }
 });
 
+app.get('/respond', async (req, res) => {
+  try {
+    const itemId = req.query.item_id;
+    const item = await Item.findByPk(itemId);
+    if (!item) {
+      return res.status(404).send('Предмет не найден');
+    }
+    res.render('respond', { item });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+app.post('/respond', async (req, res) => {
+  try {
+    const { item_id, proof_text, proof_type, proof_file } = req.body;
+
+    const response = await Response.create({
+      item_id: parseInt(item_id),
+      user_id: 1,
+      status: 'отправлено',
+      proof: proof_text
+    });
+
+    if (proof_type == "Фото" || proof_type == "Документ"){
+      await Proof.create({
+        response_id: response.id,
+        type: proof_type,
+        file_path: proof_file
+      });
+    }
+
+    res.redirect('/');
+  } catch (error) {
+    console.error('Ошибка:', error);
+    res.status(500).send('Произошла ошибка при обработке отклика');
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Сервер запущен на порту ${PORT}`);
+  try {
+    await sequelize.authenticate();
+    console.log('Подключение к БД успешно');
+    await sequelize.sync();
+  } catch (error) {
+    console.error('Ошибка подключения к БД:', error);
+  }
 });

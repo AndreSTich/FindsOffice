@@ -1,0 +1,54 @@
+<%- include('partials/header') %>
+
+<body class="publish-page">
+<div class="publish-container">
+  <h2>Отклик на предмет: <%= item.title %></h2>
+  <form id="respond-form" method="POST" action="/respond">
+    <input type="hidden" name="item_id" value="<%= item.id %>">
+    <input type="hidden" name="item_type" value="<%= item.type %>">
+
+    <% if (item.type === 'lost') { %>
+    <div class="form-group">
+      <label for="proof_text">Информация:</label>
+      <textarea id="proof_text" name="proof_text" rows="4" placeholder="Опишите место находки и как связаться с вами" required></textarea>
+    </div>
+
+      <div class="form-group">
+        <label for="proof_type">Тип доказательства:</label>
+        <select id="proof_type" name="proof_type">
+          <option value="photo">Фото</option>
+          <option value="document">Документ</option>
+        </select>
+      </div>
+
+    <div class="form-group">
+      <label for="proof_file">Прикрепить файл:</label>
+      <input type="file" id="proof_file" name="proof_file" accept="image/*,.pdf,.doc,.docx" required>
+    </div>
+    <% } else { %>
+    <div class="form-group">
+      <label for="proof_text">Доказательства:</label>
+      <textarea id="proof_text" name="proof_text" rows="4" placeholder="Опишите особенности предмета" required></textarea>
+    </div>
+    
+    <div class="form-group">
+      <label for="proof_type">Тип доказательства:</label>
+      <select id="proof_type" name="proof_type">
+        <option value="photo">Текст</option>
+        <option value="photo">Фото</option>
+        <option value="document">Документ</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label for="proof_file">Прикрепить файл:</label>
+      <input type="file" id="proof_file" name="proof_file" accept="image/*,.pdf,.doc,.docx">
+    </div>
+    <% } %>
+    
+    <button type="submit" class="publish-page-button">Отправить отклик</button>
+  </form>
+</div>
+</body>
+
+<%- include('partials/footer') %>

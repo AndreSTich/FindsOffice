@@ -50,10 +50,11 @@
 <div class="items-container">
   <% items.forEach(item => { %>
     <div class="item-card" 
-         data-type="<%= item.type %>" 
-         data-city="<%= item.city %>" 
-         data-category="<%= item.category %>"
-         data-description="<%= item.description %>">
+      data-id="<%= item.id %>"
+      data-type="<%= item.type %>" 
+      data-city="<%= item.city %>" 
+      data-category="<%= item.category %>"
+      data-description="<%= item.description %>">
       
       <div class="item-image">
         <% if (item.photo_path) { %>
@@ -89,7 +90,7 @@
         <p><strong>Место:</strong> <span id="modal-location"></span></p>
         <p><strong>Дата:</strong> <span id="modal-date"></span></p>
         <p><strong>Описание:</strong> <span id="modal-description"></span></p>
-        <button id="respond-btn" class="respond-button"></button>
+        <button id="respond-btn" class="respond-button" data-item-id="">Откликнуться</button>
       </div>
     </div>
   </div>

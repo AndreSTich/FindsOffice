@@ -74,6 +74,7 @@ $(document).on('click', '.item-card', function() {
   const $card = $(this);
   
   const itemData = {
+    id: $card.data('id'),
     title: $card.find('h3').text(),
     city: $card.data('city'),
     category: $card.data('category'),
@@ -85,13 +86,14 @@ $(document).on('click', '.item-card', function() {
     type: $card.data('type')
   };
 
-  // Заполняем модальное окно
   $('#modal-title').text(itemData.title);
   $('#modal-city').text(itemData.city);
   $('#modal-location').text(itemData.location || 'Не указано');
   $('#modal-date').text(itemData.date);
   $('#modal-description').text(itemData.description || 'Описание отсутствует');
   
+  $('#respond-btn').data('item-id', itemData.id);
+
   const respondBtn = $('#respond-btn');
   if (itemData.type === 'found') {
     respondBtn.text('Откликнуться').removeClass('lost').addClass('found');
@@ -99,7 +101,6 @@ $(document).on('click', '.item-card', function() {
     respondBtn.text('Сообщить о находке').removeClass('found').addClass('lost');
   }
 
-  // Обработка изображения
   if (itemData.photo) {
     $('#modal-image').attr('src', itemData.photo).show();
   } else {
@@ -121,14 +122,12 @@ $(window).click(function(event) {
 });
 
 $('#respond-btn').click(function() {
-  const itemTitle = $('#modal-title').text();
-  const btnText = $(this).text();
-  
-  if (btnText === 'Откликнуться') {
-    alert(`Вы откликнулись на найденный предмет: ${itemTitle}`);
-  } else if (btnText === 'Сообщить о находке') {
-    alert(`Вы сообщили о находке потерянного предмета: ${itemTitle}`);
+  const itemId = $(this).data('item-id');
+  if (!itemId) {
+    alert('Ошибка: ID предмета не найден');
+    return;
   }
+  window.location.href = `/respond?item_id=${itemId}`;
 });
 
 $(document).ready(function() {
