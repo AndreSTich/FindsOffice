@@ -18,6 +18,9 @@
       <div class="user-info">
         <div style="font-size: 20px;"><b><%= user.last_name %> <%= user.first_name %></b></div>
         <div style="font-size: 14px; color: gray">Логин: <%= user.login %></div>
+          <div class="auth-button-container">
+              <a href="/login" class="auth-button">Войти в систему</a>
+          </div>
       </div>
       
       <nav class="sidebar-nav">
@@ -32,4 +35,5 @@
       <span></span>
       <span></span>
     </button>
+
     </body>

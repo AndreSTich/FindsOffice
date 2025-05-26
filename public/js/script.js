@@ -15,6 +15,13 @@ $(document).click(function(event) {
 });
 
 $(document).ready(function() {
+  $('#showRegister').click(function(e) {
+      e.preventDefault();
+      window.location.href = '/login?register=true';
+  });
+});
+
+$(document).ready(function() {
   let currentType = 'all';
   
   $('.type-btn').click(function() {
@@ -88,7 +95,7 @@ async function showModal($card, modalId) {
     const isRequest = $card.hasClass('request-card');
     const isResponse = $card.hasClass('response-card');
     const itemId = $card.data('id');
-    const userId = 1; // ID текущего пользователя из EJS
+    const userId = $card.data('userId') || $('#current-user-id').data('userId');
     
     const itemData = {
       id: itemId,
@@ -136,7 +143,7 @@ async function showModal($card, modalId) {
         additionalData.proofs.forEach(proof => {
           $filesList.append(`
             <div class="file-item">
-              <a href="${proof.file_path}" target="_blank" class="file-link">
+              <a href="/uploads/${proof.file_path}" target="_blank" class="file-link">
                 ${proof.file_path.split('/').pop()}
               </a>
             </div>
@@ -393,3 +400,22 @@ document.addEventListener('DOMContentLoaded', function() {
   const maxDate = today.toISOString().split('T')[0];
   dateInput.setAttribute('max', maxDate);
 });
+
+$(document).ready(function() {
+  // Обработка формы входа
+  $('#loginForm').submit(function(e) {
+      e.preventDefault();
+      $.post('/login', $(this).serialize())
+          .done(() => window.location.reload())
+          .fail(response => alert(response.responseText));
+  });
+
+  // Обработка формы регистрации
+  $('#registerForm').submit(function(e) {
+      e.preventDefault();
+      $.post('/register', $(this).serialize())
+          .done(() => window.location.reload())
+          .fail(response => alert(response.responseText));
+  });
+});
+
