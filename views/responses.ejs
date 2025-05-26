@@ -5,7 +5,7 @@
   
   <div class="requests-list">
     <% responses.forEach(response => { %>
-      <div class="response-card" data-id="<%= response.id %>"      data-id="<%= response.id %>" data-location="<%= response.Item.location %>" data-description="<%= response.Item.description %>">
+      <div class="response-card" data-id="<%= response.id %>" data-id="<%= response.id %>" data-location="<%= response.Item.location %>" data-category="<%= response.Item.category %>" data-description="<%= response.Item.description %>">
         <div class="request-content">
           <div class="request-image">
             <% if (response.Item.photo_path) { %>
@@ -32,25 +32,6 @@
   </div>
 </div>
 
-<div id="sidebar-menu" class="sidebar">
-    <div class="user-info">
-      <div style="font-size: 20px;"><b><%= user.lastName %> <%= user.firstName %></b></div>
-      <div style="font-size: 14px; color: gray">Логин: <%= user.login %></div>
-    </div>
-    
-    <nav class="sidebar-nav">
-      <a href="/" class="sidebar-link">Главная страница</a>
-      <a href="/responses" class="sidebar-link">Отклики</a>
-      <a href="/requests" class="sidebar-link">Заявки</a>
-    </nav>
-  </div>
-  
-  <button id="menu-toggle" class="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-
 <div id="response-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -63,14 +44,15 @@
           <p><strong>Город:</strong> <span id="modal-city"></span></p>
           <p><strong>Место:</strong> <span id="modal-location"></span></p>
           <p><strong>Дата:</strong> <span id="modal-date"></span></p>
+          <p><strong>Категория:</strong> <span id="modal-category"></span></p>
           <p><strong>Описание:</strong> <span id="modal-description"></span></p>
           
           <div class="user-section">
-            <p class="proof">Моя информация</p>
-            <div id="modal-proof-text" class="proof-text"></div>
+            <p class="proof" style="margin-bottom: 0px;">Моя информация:</p>
+            <div id="modal-proof-text" style="font-size: 14px;"></div>
             
-            <p class="proof">Прикрепленные файлы</p>
-            <div id="modal-files-list" class="files-list"></div>
+            <p class="proof" style="margin-bottom: 0px;">Прикрепленный файл:</p>
+            <div id="modal-files-list" style="font-size: 14px;"></div>
           </div>
         </div>
       </div>

@@ -2,51 +2,71 @@
 
 <body class="publish-page">
 <div class="publish-container">
-  <h2>Отклик на предмет: <%= item.title %></h2>
-  <form id="respond-form" method="POST" action="/respond">
+  <h2><%= isEdit ? 'Редактирование отклика на предмет: ' : 'Отклик на предмет:' %> <%= item.title %></h2>
+  <form id="respond-form" method="POST" action="<%= isEdit ? '/edit-response/' + response.id : '/respond' %>">
     <input type="hidden" name="item_id" value="<%= item.id %>">
     <input type="hidden" name="item_type" value="<%= item.type %>">
 
     <% if (item.type === 'lost') { %>
     <div class="form-group">
       <label for="proof_text">Информация:</label>
-      <textarea id="proof_text" name="proof_text" rows="4" placeholder="Опишите место находки и как связаться с вами" required></textarea>
+      <textarea id="proof_text" name="proof_text" rows="4" placeholder="Опишите место находки и как связаться с вами" required><%= isEdit ? response.proof : '' %></textarea>
     </div>
 
       <div class="form-group">
         <label for="proof_type">Тип доказательства:</label>
         <select id="proof_type" name="proof_type">
-          <option value="photo">Фото</option>
-          <option value="document">Документ</option>
+          <option value="photo"<%= isEdit && response.Proofs && response.Proofs.some(p => p.type === 'photo') ? 'selected' : '' %>>Фото</option>
+          <option value="document" <%= isEdit && response.Proofs && response.Proofs.some(p => p.type === 'document') ? 'selected' : '' %>>Документ</option>
         </select>
+        <small id="file-help" style="color:gray"></small>
       </div>
 
     <div class="form-group">
       <label for="proof_file">Прикрепить файл:</label>
-      <input type="file" id="proof_file" name="proof_file" accept="image/*,.pdf,.doc,.docx" required>
+      <input type="file" id="proof_file" name="proof_file" accept="image/*,.pdf,.doc,.docx" <%= isEdit ? '' : 'required' %>>
+
+      <% if (isEdit && response.Proofs && response.Proofs.length > 0) { %>
+        <div class="current-files">
+          <label style="margin-top: 10px;">Текущий файл:
+          <% response.Proofs.forEach(proof => { %>
+              <a href="<%= proof.file_path %>" target="_blank"><%= proof.file_path.split('/').pop() %></a></label>
+          <% }); %>
+        </div>
+      <% } %>
     </div>
     <% } else { %>
     <div class="form-group">
       <label for="proof_text">Доказательства:</label>
-      <textarea id="proof_text" name="proof_text" rows="4" placeholder="Опишите особенности предмета" required></textarea>
+      <textarea id="proof_text" name="proof_text" rows="4" placeholder="Опишите особенности предмета" required><%= isEdit ? response.proof : '' %></textarea>
     </div>
     
     <div class="form-group">
       <label for="proof_type">Тип доказательства:</label>
       <select id="proof_type" name="proof_type">
-        <option value="photo">Текст</option>
-        <option value="photo">Фото</option>
-        <option value="document">Документ</option>
+        <option value="text" <%= isEdit && (!response.Proofs || response.Proofs.length === 0) ? 'selected' : '' %>>Текст</option>
+        <option value="photo" <%= isEdit && response.Proofs && response.Proofs.some(p => p.type === 'photo') ? 'selected' : '' %>>Фото</option>
+        <option value="document" <%= isEdit && response.Proofs && response.Proofs.some(p => p.type === 'document') ? 'selected' : '' %>>Документ</option>
       </select>
+      <small id="file-help" style="color:gray"></small>
     </div>
     
     <div class="form-group">
       <label for="proof_file">Прикрепить файл:</label>
       <input type="file" id="proof_file" name="proof_file" accept="image/*,.pdf,.doc,.docx">
+      
+      <% if (isEdit && response.Proofs && response.Proofs.length > 0) { %>
+        <div class="current-files">
+          <label style="margin-top: 10px;">Текущий файл:
+          <% response.Proofs.forEach(proof => { %>
+              <a href="/uploads/<%= proof.file_path %>" target="_blank"><%= proof.file_path %></a></label>
+          <% }); %>
+        </div>
+      <% } %>
     </div>
     <% } %>
     
-    <button type="submit" class="publish-page-button">Отправить отклик</button>
+    <button type="submit" class="publish-page-button"><%= isEdit ? 'Обновить отклик' : 'Отправить отклик' %></button>
   </form>
 </div>
 </body>

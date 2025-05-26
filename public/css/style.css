@@ -426,3 +426,7 @@ body.publish-page {
   font-weight: bold;
   color: red;
 }
+
+.respond-button.responded{
+  background-color: #2c3e50;
+}

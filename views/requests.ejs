@@ -4,7 +4,7 @@
   <h1>Мои заявки</h1>
     <div class="requests-list">
       <% requests.forEach(request => { %>
-        <div class="request-card" data-id="<%= request.id %>" data-location="<%= request.Item.location %>" data-description="<%= request.Item.description %>">
+        <div class="request-card" data-id="<%= request.id %>" data-location="<%= request.Item.location %>" data-category="<%= request.Item.category %>" data-description="<%= request.Item.description %>">
           <div class="request-content">
             <div class="request-image">
               <% if (request.Item.photo_path) { %>
@@ -33,25 +33,6 @@
     </div>
   </div>
 
-  <div id="sidebar-menu" class="sidebar">
-    <div class="user-info">
-      <div style="font-size: 20px;"><b><%= user.lastName %> <%= user.firstName %></b></div>
-      <div style="font-size: 14px; color: gray">Логин: <%= user.login %></div>
-    </div>
-    
-    <nav class="sidebar-nav">
-      <a href="/" class="sidebar-link">Главная страница</a>
-      <a href="/responses" class="sidebar-link">Отклики</a>
-      <a href="/requests" class="sidebar-link">Заявки</a>
-    </nav>
-  </div>
-  
-  <button id="menu-toggle" class="menu-toggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-
   <div id="request-modal" class="modal">
     <div class="modal-content">
       <span class="close">&times;</span>
@@ -64,6 +45,7 @@
           <p><strong>Город:</strong> <span id="modal-city"></span></p>
           <p><strong>Место:</strong> <span id="modal-location"></span></p>
           <p><strong>Дата:</strong> <span id="modal-date"></span></p>
+          <p><strong>Категория:</strong> <span id="modal-category"></span></p>
           <p><strong>Описание:</strong> <span id="modal-description"></span></p>
         </div>
       </div>

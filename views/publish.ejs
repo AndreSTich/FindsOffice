@@ -2,54 +2,65 @@
 
 <body class="publish-page">
 <div class="publish-container">
-  <h2>Заявка на публикации утерянной вещи</h2>
-  <form id="publish-form" method="POST" action="/publish">
+  <h2><%= isEdit ? 'Редактирование заявки' : 'Заявка на публикацию утерянной вещи' %></h2>
+  <form id="publish-form" method="POST" action="<%= isEdit ? '/update-request/' + request.id : '/publish' %>">
     <div class="form-group">
       <label for="title">Название:</label>
-      <input type="text" id="title" name="title" required>
+      <input type="text" id="title" name="title" value="<%= isEdit ? request.Item.title : '' %>" required>
     </div>
     
     <div class="form-group">
       <label for="description">Описание:</label>
-      <textarea id="description" name="description" rows="4"></textarea>
+      <textarea id="description" name="description" rows="4"><%= isEdit ? request.Item.description : '' %></textarea>
     </div>
     
     <div class="form-group">
       <label for="city">Город:</label>
       <select id="city" name="city" required>
-        <option value="Альметьевск">Альметьевск</option>
-        <option value="Казань">Казань</option>
-        <option value="Москва">Москва</option>
-        <option value="Санкт-Петербург">Санкт-Петербург</option>
+        <option value="Альметьевск" <%= isEdit && request.Item.city === 'Альметьевск' ? 'selected' : '' %>>Альметьевск</option>
+        <option value="Казань" <%= isEdit && request.Item.city === 'Казань' ? 'selected' : '' %>>Казань</option>
+        <option value="Москва" <%= isEdit && request.Item.city === 'Москва' ? 'selected' : '' %>>Москва</option>
+        <option value="Санкт-Петербург" <%= isEdit && request.Item.city === 'Санкт-Петербург' ? 'selected' : '' %>>Санкт-Петербург</option>
       </select>
     </div>
     
     <div class="form-group">
       <label for="location">Местонахождение:</label>
-      <input type="text" id="location" name="location">
+      <input type="text" id="location" name="location" value="<%= isEdit ? request.Item.location : '' %>">
     </div>
     
     <div class="form-group">
       <label for="date">Дата:</label>
-      <input type="date" id="date" name="date" required>
+      <input type="date" id="date" name="date" value="<%= isEdit ? request.Item.date.toISOString().split('T')[0] : '' %>" required>
     </div>
     
     <div class="form-group">
       <label for="photo">Фото:</label>
-      <div id="photo-preview" class="publish-photo">
-        <span id="photo-placeholder">Здесь будет фото</span>
-      </div>
+      <% if (isEdit && request.Item.photo_path) { %>
+        <div id="photo-preview" class="publish-photo" style="background-image: url('/uploads/<%= request.Item.photo_path %>')">
+          <span id="photo-placeholder" style="display: none;">Здесь будет фото</span>
+        </div>
+      <% } else { %>
+        <div id="photo-preview" class="publish-photo">
+          <span id="photo-placeholder">Здесь будет фото</span>
+        </div>
+      <% } %>
+      
       <input type="file" id="photo-input" name="photo" accept="image/*">
+      
+      <% if (isEdit) { %>
+        <input type="hidden" name="existing_photo" value="<%= request.Item.photo_path %>">
+      <% } %>
     </div>
     
     <div class="form-group">
       <label for="category">Категория:</label>
       <select id="category" name="category" required>
-        <option value="драгоценность">Драгоценности</option>
-        <option value="электроника">Электроника</option>
-        <option value="документ">Документы</option>
-        <option value="одежда">Одежда</option>
-        <option value="другое">Другое</option>
+        <option value="драгоценность" <%= isEdit && request.Item.category === 'драгоценность' ? 'selected' : '' %>>Драгоценности</option>
+        <option value="электроника" <%= isEdit && request.Item.category === 'электроника' ? 'selected' : '' %>>Электроника</option>
+        <option value="документ" <%= isEdit && request.Item.category === 'документ' ? 'selected' : '' %>>Документы</option>
+        <option value="одежда" <%= isEdit && request.Item.category === 'одежда' ? 'selected' : '' %>>Одежда</option>
+        <option value="другое" <%= isEdit && request.Item.category === 'другое' ? 'selected' : '' %>>Другое</option>
       </select>
     </div>
     
@@ -57,15 +68,17 @@
       <label>Тип:</label>
       <div>
         <label>
-          <input type="radio" name="type" value="found" checked> Найденные
+          <input type="radio" name="type" value="found" <%= !isEdit || request.Item.type === 'found' ? 'checked' : '' %>> Найденные
         </label>
         <label>
-          <input type="radio" name="type" value="lost"> Потерянные
+          <input type="radio" name="type" value="lost" <%= isEdit && request.Item.type === 'lost' ? 'checked' : '' %>> Потерянные
         </label>
       </div>
     </div>
     
-    <button type="submit" class="publish-page-button">Опубликовать</button>
+    <button type="submit" class="publish-page-button">
+      <%= isEdit ? 'Сохранить изменения' : 'Опубликовать' %>
+    </button>
   </form>
 </div>
 </body>

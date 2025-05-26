@@ -88,6 +88,7 @@ async function showModal($card, modalId) {
     const isRequest = $card.hasClass('request-card');
     const isResponse = $card.hasClass('response-card');
     const itemId = $card.data('id');
+    const userId = 1; // ID текущего пользователя из EJS
     
     const itemData = {
       id: itemId,
@@ -96,15 +97,16 @@ async function showModal($card, modalId) {
         ? $card.find('p:contains("Город")').text().replace('Город: ', '')
         : $card.data('city'),
       location: isRequest || isResponse
-        ? $card.data('location')
-        : $card.find('p:contains("Место:")').text().replace('Место: ', ''),
+        ? $card.data('location') || 'не указано'
+        : $card.find('p:contains("Место:")').text().replace('Место: ', '') || 'не указано',
       date: isRequest || isResponse
         ? $card.find('p:contains("Дата")').text().replace('Дата: ', '')
         : $card.find('p:contains("Дата:")').text().replace('Дата: ', ''),
       description: $card.data('description') || 'Описание отсутствует',
       photo: $card.find('img').attr('src') || '',
       status: $card.find('.request-status').text().replace('Статус: ', '') || null,
-      type: $card.data('type')
+      type: $card.data('type'),
+      category: $card.data('category') || $card.find('p:contains("Категория")').text().replace('Категория: ', '') || 'не указана'
     };
 
     let additionalData = {};
@@ -122,6 +124,7 @@ async function showModal($card, modalId) {
     $modal.find('#modal-location').text(itemData.location);
     $modal.find('#modal-date').text(itemData.date);
     $modal.find('#modal-description').text(itemData.description);
+    $modal.find('#modal-category').text(itemData.category);
     
     if (modalId === '#response-modal') {
       $modal.find('#modal-proof-text').text(additionalData.proof);
@@ -146,10 +149,27 @@ async function showModal($card, modalId) {
 
     if (modalId === '#item-modal') {
       const $respondBtn = $('#respond-btn').data('item-id', itemData.id);
-      if (itemData.type === 'found') {
-        $respondBtn.text('Откликнуться').removeClass('lost').addClass('found');
-      } else if (itemData.type === 'lost') {
-        $respondBtn.text('Сообщить о находке').removeClass('found').addClass('lost');
+      
+      const hasResponded = await checkUserResponse(itemId, userId);
+      
+      if (hasResponded) {
+        $respondBtn.text(itemData.type === 'found' ? 'Уже откликнулись' : 'Спасибо, что сообщили')
+                  .removeClass('found lost')
+                  .addClass('responded')
+                  .off('click')
+                  .click(function() {
+                    window.location.href = '/responses';
+                  });
+      } else {
+        if (itemData.type === 'found') {
+          $respondBtn.text('Откликнуться').removeClass('lost responded').addClass('found');
+        } else if (itemData.type === 'lost') {
+          $respondBtn.text('Сообщить о находке').removeClass('found responded').addClass('lost');
+        }
+        $respondBtn.off('click').click(function() {
+          const itemId = $(this).data('item-id');
+          window.location.href = `/respond?item_id=${itemId}`;
+        });
       }
     }
 
@@ -165,6 +185,17 @@ async function showModal($card, modalId) {
   } catch (error) {
     console.error('Ошибка при открытии модального окна:', error);
     alert('Не удалось загрузить данные');
+  }
+}
+
+async function checkUserResponse(itemId, userId) {
+  try {
+    const response = await fetch(`/api/check-response?item_id=${itemId}&user_id=${userId}`);
+    const data = await response.json();
+    return data.hasResponded;
+  } catch (error) {
+    console.error('Ошибка при проверке отклика:', error);
+    return false;
   }
 }
 
@@ -243,4 +274,122 @@ $(document).ready(function() {
 
     reader.readAsDataURL(file);
   });
+});
+
+$(document).on('click', '.request-card .delete-btn', async function() {
+  const id = $(this).data('id');
+  const confirmed = confirm('Вы уверены, что хотите удалить эту заявку?');
+  
+  if (confirmed) {
+    await deleteItem(id, 'request');
+  }
+});
+
+
+$(document).on('click', '.response-card .delete-btn', async function() {
+  const id = $(this).data('id');
+  const confirmed = confirm('Вы уверены, что хотите отозвать этот отклик?');
+  
+  if (confirmed) {
+    await deleteItem(id, 'response');
+  }
+});
+
+async function deleteItem(id, type) {
+  try {
+    const endpoint = type === 'request' 
+      ? `/api/requests/${id}`
+      : `/api/responses/${id}`;
+
+    const $btn = $(`.${type}-card .delete-btn[data-id="${id}"]`);
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+    const response = await fetch(endpoint, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+
+      $(`.${type}-card[data-id="${id}"]`).fadeOut(300, function() {
+        $(this).remove();
+        checkEmptyList();
+      });
+      
+    } else {
+      alert(result.error || 'Не удалось удалить запись');
+    }
+  } catch (error) {
+    console.error('Ошибка:', error);
+    alert('Ошибка при удалении');
+  } finally {
+
+    $(`.${type}-card .delete-btn[data-id="${id}"]`)
+      .prop('disabled', false)
+      .text(type === 'request' ? 'Удалить' : 'Отозвать');
+  }
+}
+
+$(document).on('click', '.request-card .edit-btn', function() {
+  const id = $(this).data('id');
+  window.location.href = `/edit-request/${id}`;
+});
+
+$(document).on('click', '.response-card .edit-btn', function() {
+  const id = $(this).data('id');
+  window.location.href = `/edit-response/${id}`;
+});
+
+document.getElementById('proof_type').addEventListener('change', function() {
+  const helpText = document.getElementById('file-help');
+  if (this.value === 'photo') {
+    helpText.textContent = 'Допустимые форматы: jpg, png, jpeg';
+  } else {
+    helpText.textContent = 'Допустимые форматы: pdf, doc, docx';
+  }
+});
+
+document.getElementById('proof_type').addEventListener('change', function() {
+  const fileInput = document.getElementById('proof_file');
+  const helpText = document.getElementById('file-help');
+  
+  if (this.value === 'photo') {
+    helpText.textContent = 'Допустимые форматы: jpg, png, jpeg';
+    fileInput.value = '';
+  } else if (this.value === 'document') {
+    helpText.textContent = 'Допустимые форматы: pdf, doc, docx';
+    fileInput.value = '';
+  }
+});
+
+document.getElementById('proof_file').addEventListener('change', function() {
+  const file = this.files[0];
+  if (!file) return;
+
+  const proofType = document.getElementById('proof_type').value;
+  const fileName = file.name.toLowerCase();
+  const allowedPhotoExtensions = ['.jpg', '.jpeg', '.png'];
+  const allowedDocExtensions = ['.pdf', '.doc', '.docx'];
+  let isValid = false;
+
+  if (proofType === 'photo') {
+    isValid = allowedPhotoExtensions.some(ext => fileName.endsWith(ext));
+  } else if (proofType === 'document') {
+    isValid = allowedDocExtensions.some(ext => fileName.endsWith(ext));
+  }
+
+  if (!isValid) {
+    alert(`Недопустимый формат файла для выбранного типа`);
+    this.value = '';
+    return;
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const dateInput = document.getElementById('date');
+  const today = new Date();
+  const maxDate = today.toISOString().split('T')[0];
+  dateInput.setAttribute('max', maxDate);
 });
