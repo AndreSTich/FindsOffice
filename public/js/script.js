@@ -420,3 +420,32 @@ function logout() {
     });
   }
 }
+
+$(document).ready(function() {
+  $('.role-select').change(function() {
+    const userId = $(this).data('user-id');
+    const newRole = $(this).val();
+    
+    if (confirm(`Вы уверены, что хотите изменить роль пользователя?`)) {
+      $.ajax({
+        url: `/api/users/${userId}/role`,
+        method: 'PUT',
+        data: { role: newRole },
+        success: function(response) {
+          alert('Роль успешно изменена');
+          // Если изменили свою роль - перезагружаем страницу
+          if (response.needReload) {
+            window.location.reload();
+          }
+        },
+        error: function(xhr) {
+          alert('Ошибка при изменении роли: ' + (xhr.responseJSON?.error || 'Неизвестная ошибка'));
+          window.location.reload();
+        }
+      });
+    } else {
+      // Отмена - возвращаем предыдущее значение
+      window.location.reload();
+    }
+  });
+});

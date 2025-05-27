@@ -492,28 +492,33 @@ app.get('/login', (req, res) => {
 
 app.post('/login', async (req, res) => {
   try {
-      const { login, password } = req.body;
-      const user = await User.findOne({ where: { login } });
-      
-      if (!user || !(await bcrypt.compare(password, user.password))) {
-          return res.render('login', {
-              title: 'Вход в систему',
-              error: 'Неверный логин или пароль',
-              showRegisterFields: false,
-              formData: req.body
-          });
-      }
-      
-      req.session.userId = user.id;
-      req.session.role = user.role;
-      res.redirect('/');
-  } catch (error) {
-      res.render('login', {
-          title: 'Вход в систему',
-          error: 'Ошибка входа: ' + error.message,
-          showRegisterFields: false,
-          formData: req.body
+    const { login, password } = req.body;
+    const user = await User.findOne({ where: { login } });
+    
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      return res.render('login', {
+        title: 'Вход в систему',
+        error: 'Неверный логин или пароль',
+        showRegisterFields: false,
+        formData: req.body
       });
+    }
+    
+    req.session.userId = user.id;
+    req.session.role = user.role;
+    
+    if (user.role === 'администратор') {
+      return res.redirect('/users');
+    }
+    
+    res.redirect('/');
+  } catch (error) {
+    res.render('login', {
+      title: 'Вход в систему',
+      error: 'Ошибка входа: ' + error.message,
+      showRegisterFields: false,
+      formData: req.body
+    });
   }
 });
 
@@ -573,6 +578,53 @@ app.get('/logout', (req, res) => {
     }
     res.redirect('/');
   });
+});
+
+
+// Проверка админских прав
+const requireAdmin = (req, res, next) => {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  if (req.session.role !== 'администратор') {
+    return res.status(403).send('Доступ запрещен');
+  }
+  next();
+};
+
+// Страница пользователей (только для админа)
+app.get('/users', requireAdmin, async (req, res) => {
+  try {
+    const users = await User.findAll({
+      attributes: ['id', 'first_name', 'last_name', 'phone', 'role'],
+      order: [['id', 'ASC']]
+    });
+    
+    res.render('users', { users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+// API для изменения роли
+app.put('/api/users/:id/role', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+    
+    // Нельзя изменить свою роль (чтобы админ случайно не понизил себя)
+    if (parseInt(id) === req.session.userId) {
+      return res.status(400).json({ error: 'Вы не можете изменить свою роль' });
+    }
+    
+    await User.update({ role }, { where: { id } });
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

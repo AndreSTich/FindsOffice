@@ -34,6 +34,7 @@
         <a href="/" class="sidebar-link">Главная страница</a>
         <a href="/responses" class="sidebar-link">Отклики</a>
         <a href="/requests" class="sidebar-link">Заявки</a>
+        <% if (user.role="администратор") { %> <a href="/users" class="sidebar-link">Пользователи<sup style="color:gray; font-size: 10px;"> Специально для администратора</sup></a> <% } %>
       </nav>
       <% } %>
 

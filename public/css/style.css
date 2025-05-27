@@ -515,3 +515,33 @@ body.publish-page {
   margin-top: 20px;
   font-size: 18px;
 }
+
+.admin-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.users-list table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 2px solid gray;
+  margin-top: 20px;
+}
+
+.users-list th, .users-list td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.users-list th {
+  background-color:#2c3e50;
+  font-weight: bold;
+}
+
+.role-select {
+  padding: 8px;
+  border: 1px solid lightgray;
+  background-color: white;
+}
