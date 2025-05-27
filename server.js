@@ -43,10 +43,13 @@ User.hasMany(Response, { foreignKey: 'user_id' });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
-    secret: 'your_secret_key',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false }
+  secret: 'your_secret_key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { 
+    secure: false,
+    maxAge: 24 * 60 * 60 * 1000
+  }
 }));
 
 app.use(async (req, res, next) => {
@@ -78,7 +81,7 @@ app.get('/', async (req, res) => {
 
     res.render('index', { 
       items,
-      user: res.locals.user
+      user: req.session.userId ? await User.findByPk(req.session.userId) : null
     });
   } catch (error) {
     console.error(error);
@@ -563,7 +566,14 @@ app.post('/register', async (req, res) => {
   }
 });
 
-
+app.get('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error('Ошибка при выходе:', err);
+    }
+    res.redirect('/');
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {

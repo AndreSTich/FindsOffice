@@ -97,4 +97,17 @@
   </div>
 </div>
 
+<% if (user) { %>
+  <script>
+    window.currentUser = {
+      id: '<%= user.id %>',
+      isAuthenticated: true
+    };
+  </script>
+<% } else { %>
+  <script>
+    window.currentUser = null;
+  </script>
+<% } %>
+
 <%- include('partials/footer') %>

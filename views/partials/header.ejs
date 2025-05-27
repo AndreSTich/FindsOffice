@@ -16,18 +16,32 @@
     <body>
     <div id="sidebar-menu" class="sidebar">
       <div class="user-info">
+        <% if (user) { %>
         <div style="font-size: 20px;"><b><%= user.last_name %> <%= user.first_name %></b></div>
         <div style="font-size: 14px; color: gray">Логин: <%= user.login %></div>
-          <div class="auth-button-container">
-              <a href="/login" class="auth-button">Войти в систему</a>
+        <% } else { %>
+          <div style="font-size: 20px;"><b>Добро пожаловать!</b><br>
+            <p style="font-size: 12px; color: gray; margin-top: 2px">Для получения всех функций сервиса попросим Вас авторизоваться :3</p>
           </div>
+          <div style="text-align: center;">
+            <button class="auth-button-in" onclick="location.href='/login'">Войти</button>
+          </div>
+        <% } %>
       </div>
       
+      <% if (user) { %>
       <nav class="sidebar-nav">
         <a href="/" class="sidebar-link">Главная страница</a>
         <a href="/responses" class="sidebar-link">Отклики</a>
         <a href="/requests" class="sidebar-link">Заявки</a>
       </nav>
+      <% } %>
+
+      <% if (user) { %>
+      <div style="text-align: center; margin-top: 10px;">
+        <button class="auth-button-out" onclick="logout()">Выйти</button>
+      </div>
+      <% } %>
     </div>
     
     <button id="menu-toggle" class="menu-toggle">
