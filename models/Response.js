@@ -1,7 +1,7 @@
 module.exports = (sequelize, DataTypes) => {
     return sequelize.define('Response', {
       status: {
-        type: DataTypes.ENUM('отправлено', 'на рассмотрении', 'одобрено', 'отклонено'),
+        type: DataTypes.ENUM('отправлено', 'рассматривается', 'одобрено', 'отклонено'),
         defaultValue: 'отправлено'
       },
       proof: DataTypes.TEXT,

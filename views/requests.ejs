@@ -2,6 +2,9 @@
 
 <div class="requests-container">
   <h1>Мои заявки</h1>
+  <% if (requests.length === 0) { %>
+    <p style="font-size: 35px; margin-left: 50px;">Нет заявок для отображения</p>
+  <% } else { %>
     <div class="requests-list">
       <% requests.forEach(request => { %>
         <div class="request-card" data-id="<%= request.id %>" data-location="<%= request.Item.location %>" data-category="<%= request.Item.category %>" data-description="<%= request.Item.description %>">
@@ -51,5 +54,7 @@
       </div>
     </div>
   </div>
+
+  <% } %>
 
 <%- include('partials/footer') %>

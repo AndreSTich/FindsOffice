@@ -2,6 +2,24 @@
 
 <div class="admin-container">
   <h2 style="display: flex; justify-content: center;">Пользователи системы</h2>
+
+  <div class="user-controls">
+    <div class="search-filter-container">
+      <div class="search-box">
+        <input type="text" id="user-search" placeholder="Поиск по имени или фамилии..." class="search-input">
+      </div>
+      
+      <div class="role-filter">
+        <label for="role-filter">Фильтр по роли:</label>
+        <select id="role-filter" class="filter-select">
+          <option value="all">Все роли</option>
+          <option value="пользователь">Пользователь</option>
+          <option value="сотрудник">Сотрудник</option>
+          <option value="администратор">Администратор</option>
+        </select>
+      </div>
+    </div>
+  </div>
   
   <div class="users-list">
     <table>
@@ -16,7 +34,7 @@
       </thead>
       <tbody>
         <% users.forEach(user => { %>
-          <tr data-user-id="<%= user.id %>">
+            <tr data-user-id="<%= user.id %>" data-role="<%= user.role %>">
             <td><%= user.id %></td>
             <td><%= user.last_name %></td>
             <td><%= user.first_name %></td>

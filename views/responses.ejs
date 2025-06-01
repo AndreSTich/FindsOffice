@@ -1,8 +1,16 @@
 <%- include('partials/header') %>
 
 <div class="requests-container">
-  <h1>Мои отклики</h1>
+  <h2><%= (user.role == "сотрудник") ? 'Отклики' : 'Мои отклики' %></h2>
   
+  <% if (responses.length === 0) { %>
+    <p style="font-size: 35px; margin-left: 50px;">Нет откликов для отображения</p>
+  <% } else { %>
+    <div id="current-user" 
+      data-user-id="<%= user.id %>"
+      data-user-role="<%= user.role %>" 
+      style="display: none;">
+    </div>
   <div class="requests-list">
     <% responses.forEach(response => { %>
       <div class="response-card" data-id="<%= response.id %>" data-id="<%= response.id %>" data-location="<%= response.Item.location %>" data-category="<%= response.Item.category %>" data-description="<%= response.Item.description %>">
@@ -23,10 +31,18 @@
           </div>
         </div>
         
+        <% if (user.role == "пользователь") {%>
         <div class="request-actions">
           <button class="edit-response-btn" data-id="<%= response.id %>">Редактировать</button>
           <button class="delete-response-btn" data-id="<%= response.id %>">Удалить</button>
         </div>
+        <% } else {%>
+          <div class="request-actions">
+            <button class="empl-rev" data-id="<%= response.id %>">Рассмотреть</button>
+            <button class="empl-app" data-id="<%= response.id %>">Одобрить</button>
+            <button class="empl-rej" data-id="<%= response.id %>">Отклонить</button>
+          </div>
+        <% } %>
       </div>
     <% }); %>
   </div>
@@ -48,7 +64,11 @@
           <p><strong>Описание:</strong> <span id="modal-description"></span></p>
           
           <div class="user-section">
-            <p class="proof" style="margin-bottom: 0px;">Моя информация:</p>
+            <% if (user.role === "сотрудник" || user.role === "администратор") { %>
+              <p class="proof" style="margin-bottom: 0px;">Информация пользователя:</p>
+            <% } else { %>
+              <p class="proof" style="margin-bottom: 0px;">Моя информация:</p>
+            <% } %>
             <div id="modal-proof-text" style="font-size: 14px;"></div>
             
             <p class="proof" style="margin-bottom: 0px;">Прикрепленный файл:</p>
@@ -58,6 +78,7 @@
       </div>
     </div>
   </div>
+  <% } %>
 
 
 

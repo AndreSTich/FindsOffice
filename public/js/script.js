@@ -106,7 +106,7 @@ function highlightText($element, searchText) {
 }
 
 function removeHighlights($card) {
-  $card.find('h3 .highlight').each(function() {
+  $card.find('.highlight').each(function() {
       $(this).replaceWith($(this).text());
   });
 }
@@ -422,7 +422,8 @@ function logout() {
 }
 
 $(document).ready(function() {
-  $('.role-select').change(function() {
+  // Обработчик изменения роли
+  $(document).on('change', '.role-select', function() {
     const userId = $(this).data('user-id');
     const newRole = $(this).val();
     
@@ -433,9 +434,11 @@ $(document).ready(function() {
         data: { role: newRole },
         success: function(response) {
           alert('Роль успешно изменена');
-          // Если изменили свою роль - перезагружаем страницу
           if (response.needReload) {
             window.location.reload();
+          } else {
+            $(`tr[data-user-id="${userId}"]`).attr('data-role', newRole);
+            filterUsers();
           }
         },
         error: function(xhr) {
@@ -444,8 +447,108 @@ $(document).ready(function() {
         }
       });
     } else {
-      // Отмена - возвращаем предыдущее значение
+      $(this).val($(this).data('previous-value'));
+    }
+  }).each(function() {
+    $(this).data('previous-value', $(this).val());
+  });
+
+  function filterUsers() {
+    const searchTerm = $('#user-search').val().toLowerCase().trim();
+    const roleFilter = $('#role-filter').val();
+    
+    $('tbody tr').each(function() {
+      const $row = $(this);
+
+      const lastName = $row.find('td:nth-child(2)').text().toLowerCase();
+      const firstName = $row.find('td:nth-child(3)').text().toLowerCase();
+      const userRole = $row.attr('data-role');
+
+      const matchesSearch = searchTerm === '' || 
+                          lastName.includes(searchTerm) || 
+                          firstName.includes(searchTerm);
+      
+      const matchesRole = roleFilter === 'all' || 
+                         userRole === roleFilter;
+      
+      $row.toggle(matchesSearch && matchesRole);
+
+      if (searchTerm) {
+        if (lastName.includes(searchTerm)) {
+          highlightText($row.find('td:nth-child(2)'), searchTerm);
+        }
+        if (firstName.includes(searchTerm)) {
+          highlightText($row.find('td:nth-child(3)'), searchTerm);
+        }
+      }
+      else{
+        removeHighlights($row);
+      }
+    });
+  }
+
+  $('#user-search').on('input', filterUsers);
+  $('#role-filter').on('change', filterUsers);
+
+  filterUsers();
+});
+
+async function updateResponseStatus(responseId, newStatus) {
+  try {
+    const response = await fetch(`/api/responses/${responseId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status: newStatus })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Не удалось изменить статус');
+    }
+
+    const data = await response.json();
+    
+    const card = document.querySelector(`.response-card[data-id="${responseId}"]`);
+    
+    if (card) {
+      const statusElement = card.querySelector('.request-status');
+      if (statusElement) {
+        statusElement.textContent = `Статус: ${newStatus}`;
+        statusElement.className = `request-status ${newStatus.toLowerCase().replace(/\s+/g, '-')}`;
+      }
+
+      const itemData = data.item; 
+      if (itemData) {
+        card.querySelector('p').textContent = itemData.title;
+      }
+    } else {
       window.location.reload();
     }
+  } catch (error) {
+    console.error('Ошибка:', error);
+    alert(error.message);
+  }
+}
+
+// Обработчики кнопок с правильными статусами
+$(document).on('click', '.empl-app', function() {
+  updateResponseStatus($(this).data('id'), 'одобрено');
+});
+
+$(document).on('click', '.empl-rej', function() {
+  updateResponseStatus($(this).data('id'), 'отклонено');
+});
+
+$(document).on('click', '.empl-rev', function() {
+  updateResponseStatus($(this).data('id'), 'рассматривается');
+});
+
+$(document).ready(function() {
+  $('.request-status').each(function() {
+    const status = $(this).text().replace('Статус: ', '').trim();
+    $(this).text('Статус: ' + status);
+    $(this).addClass(status.toLowerCase().replace(/\s+/g, '-'));
   });
 });

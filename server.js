@@ -33,6 +33,7 @@ Request.belongsTo(Item, { foreignKey: 'item_id' });
 
 Item.hasMany(Response, { foreignKey: 'item_id' });
 Response.belongsTo(Item, { foreignKey: 'item_id' });
+Response.belongsTo(User, { foreignKey: 'user_id' });
 
 Response.hasMany(Proof, { foreignKey: 'response_id' });
 Proof.belongsTo(Response, { foreignKey: 'response_id' });
@@ -191,26 +192,6 @@ app.get('/requests', requireAuth, async (req, res) => {
   }
 });
 
-app.get('/responses', requireAuth, async (req, res) => {
-  try {
-    const responses = await Response.findAll({
-      where: { user_id: req.session.userId },
-      include: [{
-        model: Item,
-        required: true
-      }],
-    });
-
-    res.render('responses', { 
-      responses,
-      user: res.locals.user
-    });
-  } catch (error) {
-    console.error('Ошибка при загрузке откликов:', error);
-    res.status(500).send('Ошибка сервера');
-  }
-});
-
 app.get('/api/requests/:id', requireAuth, async (req, res) => {
   try {
     const request = await Request.findOne({
@@ -235,36 +216,6 @@ app.get('/api/requests/:id', requireAuth, async (req, res) => {
   }
 });
 
-// API для получения отклика
-app.get('/api/responses/:id', requireAuth, async (req, res) => {
-  try {
-    const response = await Response.findOne({
-      where: { 
-        id: req.params.id,
-        user_id: req.session.userId // Проверяем, что отклик принадлежит пользователю
-      },
-      include: [
-        {
-          model: Item,
-          attributes: ['id', 'title', 'city', 'location', 'description', 'photo_path', 'date']
-        },
-        {
-          model: Proof,
-          attributes: ['id', 'file_path', 'type']
-        }
-      ]
-    });
-
-    if (!response) {
-      return res.status(404).json({ error: 'Отклик не найден или у вас нет доступа' });
-    }
-
-    res.json(response);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error' });
-  }
-});
 
 // API для удаления заявки
 app.delete('/api/requests/:id', requireAuth, async (req, res) => {
@@ -581,7 +532,6 @@ app.get('/logout', (req, res) => {
 });
 
 
-// Проверка админских прав
 const requireAdmin = (req, res, next) => {
   if (!req.session.userId) {
     return res.redirect('/login');
@@ -592,11 +542,25 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Страница пользователей (только для админа)
 app.get('/users', requireAdmin, async (req, res) => {
   try {
+    const { search, role } = req.query;
+    const where = {};
+    
+    if (search) {
+      where[Sequelize.Op.or] = [
+        { first_name: { [Sequelize.Op.iLike]: `%${search}%` } },
+        { last_name: { [Sequelize.Op.iLike]: `%${search}%` } }
+      ];
+    }
+    
+    if (role && role !== 'all') {
+      where.role = role;
+    }
+    
     const users = await User.findAll({
       attributes: ['id', 'first_name', 'last_name', 'phone', 'role'],
+      where,
       order: [['id', 'ASC']]
     });
     
@@ -607,13 +571,11 @@ app.get('/users', requireAdmin, async (req, res) => {
   }
 });
 
-// API для изменения роли
 app.put('/api/users/:id/role', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { role } = req.body;
     
-    // Нельзя изменить свою роль (чтобы админ случайно не понизил себя)
     if (parseInt(id) === req.session.userId) {
       return res.status(400).json({ error: 'Вы не можете изменить свою роль' });
     }
@@ -626,6 +588,87 @@ app.put('/api/users/:id/role', requireAdmin, async (req, res) => {
     res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
+
+app.get('/responses', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.session.userId);
+    const isEmployee = user.role === 'сотрудник' || user.role === 'администратор';
+
+    const whereCondition = isEmployee ? {} : { user_id: req.session.userId };
+
+    const responses = await Response.findAll({
+      where: whereCondition,
+      include: [{
+        model: Item,
+        required: true
+      }],
+    });
+
+    res.render('responses', { 
+      responses,
+      user: user,
+      isEmpl: isEmployee
+    });
+  } catch (error) {
+    console.error('Ошибка при загрузке откликов:', error);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+app.put('/api/responses/:id/status', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const allowedStatuses = ['отправлено', 'рассматривается', 'одобрено', 'отклонено'];
+    
+    const response = await Response.findByPk(id, {
+      include: [Item]
+    });
+
+    if (!response) {
+      return res.status(404).json({ error: 'Отклик не найден' });
+    }
+
+    const user = await User.findByPk(req.session.userId);
+    const isEmployee = user.role === 'сотрудник' || user.role === 'администратор';
+    
+    if (!isEmployee) {
+      return res.status(403).json({ error: 'Недостаточно прав' });
+    }
+
+    await Response.update({ status }, { where: { id } });
+    
+    const updatedResponse = await Response.findByPk(id, {
+      include: [Item]
+    });
+    
+    res.json({ 
+      success: true,
+      status: updatedResponse.status,
+      item: updatedResponse.Item
+    });
+  } catch (error) {
+    console.error('Ошибка при изменении статуса:', error);
+    res.status(500).json({ 
+      error: 'Ошибка сервера',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+app.get('/api/responses/:id', requireAuth, async (req, res) => {
+  try {
+    const response = await Response.findOne({
+      where: { id: req.params.id },
+      include: [Item, Proof]
+    });
+    if (!response) return res.status(404).json({ error: "Отклик не найден" });
+    res.json(response);
+  } catch (error) {
+    res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
