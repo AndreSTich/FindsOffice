@@ -174,20 +174,32 @@ app.post('/respond', requireAuth, async (req, res) => {
 
 app.get('/requests', requireAuth, async (req, res) => {
   try {
+    const user = await User.findByPk(req.session.userId);
+    const isEmployee = user.role === 'сотрудник' || user.role === 'администратор';
+    const statusFilter = req.query.status;
+
+    const whereCondition = isEmployee ? {} : { user_id: req.session.userId };
+
+    const requestWhere = {...whereCondition};
+    if (statusFilter && statusFilter !== 'all') {
+      requestWhere.status = statusFilter;
+    }
+
     const requests = await Request.findAll({
-      where: { user_id: req.session.userId },
+      where: requestWhere,
       include: [{
         model: Item,
         required: true
-      }]
+      }],
     });
 
     res.render('requests', { 
       requests,
-      user: res.locals.user
+      user: user,
+      isEmpl: isEmployee
     });
   } catch (error) {
-    console.error(error);
+    console.error('Ошибка при загрузке заявок:', error);
     res.status(500).send('Ошибка сервера');
   }
 });
@@ -321,6 +333,11 @@ app.post('/update-request/:id', requireAuth, async (req, res) => {
       status: 'на рассмотрении'
     });
 
+    await Request.update(
+      { status: 'отправлено' },
+      { where: { id: req.params.id } }
+    );
+
     res.redirect('/requests');
   } catch (error) {
     console.error('Ошибка при обновлении:', error);
@@ -346,13 +363,6 @@ app.get('/edit-response/:id', requireAuth, async (req, res) => {
       return res.status(404).send('Отклик не найден или у вас нет прав');
     }
 
-    // Обновляем статус отклика на "отправлено" перед редактированием
-    await Response.update(
-      { status: 'отправлено' },
-      { where: { id: req.params.id } }
-    );
-
-    // Получаем обновленные данные отклика
     const updatedResponse = await Response.findOne({
       where: { id: req.params.id },
       include: [
@@ -377,7 +387,6 @@ app.get('/edit-response/:id', requireAuth, async (req, res) => {
   }
 });
 
-// Обновление отклика
 app.post('/edit-response/:id', requireAuth, async (req, res) => {
   try {
     const response = await Response.findOne({
@@ -394,7 +403,8 @@ app.post('/edit-response/:id', requireAuth, async (req, res) => {
     const { proof_text, proof_type, proof_file } = req.body;
 
     await Response.update(
-      { proof: proof_text },
+      { proof: proof_text,
+        status: 'отправлено'},
       { where: { id: req.params.id } }
     );
 
@@ -664,6 +674,12 @@ app.put('/api/responses/:id/status', requireAuth, async (req, res) => {
         { status: 'возвращена' },
         { where: { id: response.item_id } }
       );
+    } else if (status === 'отклонено') {
+      const newStatus = response.Item.type === 'found' ? 'найдена' : 'утеряна';
+      await Item.update(
+        { status: newStatus },
+        { where: { id: response.item_id } }
+      );
     }
 
     const updatedResponse = await Response.findByPk(id, {
@@ -694,6 +710,66 @@ app.get('/api/responses/:id', requireAuth, async (req, res) => {
     res.json(response);
   } catch (error) {
     res.status(500).json({ error: "Ошибка сервера" });
+  }
+});
+
+app.put('/api/requests/:id/status', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, comment } = req.body;
+    const allowedStatuses = ['отправлено', 'рассматривается', 'одобрено', 'отклонено'];
+    
+    const request = await Request.findByPk(id, {
+      include: [Item]
+    });
+
+    if (!request) {
+      return res.status(404).json({ error: 'Заявка не найдена' });
+    }
+
+    const user = await User.findByPk(req.session.userId);
+    const isEmployee = user.role === 'сотрудник' || user.role === 'администратор';
+    
+    if (!isEmployee) {
+      return res.status(403).json({ error: 'Недостаточно прав' });
+    }
+
+    const updateData = { status };
+    if (status === 'отклонено' && comment) {
+      updateData.comment = comment;
+    }
+
+    await Request.update(updateData, { where: { id } });
+    
+    if (status === 'одобрено') {
+      const newItemStatus = request.Item.type === 'lost' ? 'утеряна' : 'найдена';
+      await Item.update(
+        { status: newItemStatus },
+        { where: { id: request.item_id } }
+      );
+    } else if (status === 'отклонено') {
+      await Item.update(
+        { status: 'на рассмотрении' },
+        { where: { id: request.item_id } }
+      );
+    }
+
+    const updatedRequest = await Request.findByPk(id, {
+      include: [Item]
+    });
+    
+    res.json({ 
+      success: true,
+      status: updatedRequest.status,
+      comment: updatedRequest.comment,
+      item: updatedRequest.Item
+    });
+  } catch (error) {
+    console.error('Ошибка при изменении статуса заявки:', error);
+    res.status(500).json({ 
+      error: 'Ошибка сервера',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

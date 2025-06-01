@@ -1,10 +1,28 @@
 <%- include('partials/header') %>
 
 <div class="requests-container">
-  <h1>Мои заявки</h1>
+  <h2><%= (user.role == "сотрудник") ? 'Заявки' : 'Мои заявки' %></h2>
+
+  <div class="filter-section">
+    <label for="status-filter"><b>Статус отклика:</b></label>
+    <select id="status-filter" class="filter-select">
+      <option value="all">Все статусы</option>
+      <option value="отправлено">Отправлено</option>
+      <option value="рассматривается">Рассматривается</option>
+      <option value="одобрено">Одобрено</option>
+      <option value="отклонено">Отклонено</option>
+    </select>
+  </div>
+
   <% if (requests.length === 0) { %>
     <p style="font-size: 35px; margin-left: 50px;">Нет заявок для отображения</p>
   <% } else { %>
+    <div id="current-user" 
+    data-user-id="<%= user.id %>"
+    data-user-role="<%= user.role %>" 
+    style="display: none;">
+  </div>
+
     <div class="requests-list">
       <% requests.forEach(request => { %>
         <div class="request-card" data-id="<%= request.id %>" data-location="<%= request.Item.location %>" data-category="<%= request.Item.category %>" data-description="<%= request.Item.description %>">
@@ -19,18 +37,27 @@
             
             <div class="request-info">
               <p style="font-size: 20px; font-weight: bold;"><%= request.Item.title %></p>
-              <p class="request-status <%= request.status %>" style="font-size: 16px; font-weight: bold;">
-                Статус: <%= request.status %>
-              </p>
+              <p class="request-status <%= request.status %>" style="font-size: 16px; font-weight: bold;">Статус: <%= request.status %></p>
+              <% if (request.status === "отклонено" && user.role == "пользователь") {%>
+                <p style="color:#e74c3c"><b>Причина отклонения заявки:  <i><%= request.comment %></i></b></p>
+              <% } %>
               <p style="font-size: 18px;"><b>Город:</b> <%= request.Item.city %></p>
               <p style="font-size: 18px;"><b>Дата:</b> <%= new Date(request.Item.date).toLocaleDateString('ru-RU') %></p>
             </div>
           </div>
           
+          <% if (user.role == "пользователь") {%>
           <div class="request-actions">
             <button class="edit-request-btn" data-id="<%= request.id %>">Редактировать</button>
             <button class="delete-request-btn" data-id="<%= request.id %>">Удалить</button>
           </div>
+          <% } else {%>
+            <div class="request-actions">
+              <button class="req-empl-rev" data-id="<%= request.id %>">Рассмотреть</button>
+              <button class="req-empl-app" data-id="<%= request.id %>">Одобрить</button>
+              <button class="req-empl-rej" data-id="<%= request.id %>">Отклонить</button>
+            </div>
+          <% } %>
         </div>
       <% }); %>
     </div>

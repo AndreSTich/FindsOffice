@@ -53,9 +53,9 @@
         </div>
         <% } else {%>
           <div class="request-actions">
-            <button class="empl-rev" data-id="<%= response.id %>">Рассмотреть</button>
-            <button class="empl-app" data-id="<%= response.id %>">Одобрить</button>
-            <button class="empl-rej" data-id="<%= response.id %>">Отклонить</button>
+            <button class="res-empl-rev" data-id="<%= response.id %>">Рассмотреть</button>
+            <button class="res-empl-app" data-id="<%= response.id %>">Одобрить</button>
+            <button class="res-empl-rej" data-id="<%= response.id %>">Отклонить</button>
           </div>
         <% } %>
       </div>
@@ -94,32 +94,5 @@
     </div>
   </div>
   <% } %>
-
-  <script>
-    $(document).ready(function() {
-      // Устанавливаем выбранное значение из URL параметра
-      const urlParams = new URLSearchParams(window.location.search);
-      const statusParam = urlParams.get('status');
-      if (statusParam) {
-        $('#status-filter').val(statusParam);
-      }
-  
-      // Обработчик изменения выпадающего списка
-      $('#status-filter').change(function() {
-        const selectedStatus = $(this).val();
-        
-        // Обновляем URL с новым параметром status
-        const url = new URL(window.location.href);
-        if (selectedStatus === 'all') {
-          url.searchParams.delete('status');
-        } else {
-          url.searchParams.set('status', selectedStatus);
-        }
-        
-        // Перезагружаем страницу с новым URL
-        window.location.href = url.toString();
-      });
-    });
-  </script>
 
 <%- include('partials/footer') %>

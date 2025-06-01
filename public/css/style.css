@@ -585,17 +585,20 @@ body.publish-page {
   border: 1px solid darkgray;
 }
 
-.empl-rev{
+.res-empl-rev,
+.req-empl-rev{
   width: 150px;
   background-color: gold;
 }
 
-.empl-app{
+.res-empl-app,
+.req-empl-app{
   width: 150px;
   background-color:#2ecc71;
 }
 
-.empl-rej{
+.res-empl-rej,
+.req-empl-rej{
   width: 150px;
   background-color:#e74c3c;
 }

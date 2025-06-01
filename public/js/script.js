@@ -532,16 +532,123 @@ async function updateResponseStatus(responseId, newStatus) {
   }
 }
 // Обработчики кнопок с правильными статусами
-$(document).on('click', '.empl-app', function() {
+$(document).on('click', '.res-empl-app', function() {
   updateResponseStatus($(this).data('id'), 'одобрено');
 });
 
-$(document).on('click', '.empl-rej', function() {
+$(document).on('click', '.res-empl-rej', function() {
   updateResponseStatus($(this).data('id'), 'отклонено');
 });
 
-$(document).on('click', '.empl-rev', function() {
+$(document).on('click', '.res-empl-rev', function() {
   updateResponseStatus($(this).data('id'), 'рассматривается');
+});
+
+$(document).ready(function() {
+  $('.request-status').each(function() {
+    const status = $(this).text().replace('Статус: ', '').trim();
+    $(this).text('Статус: ' + status);
+    $(this).addClass(status.toLowerCase().replace(/\s+/g, '-'));
+  });
+});
+
+$(document).ready(function() {
+  // Фильтр статус отклик
+  const urlParams = new URLSearchParams(window.location.search);
+  const statusParam = urlParams.get('status');
+  if (statusParam) {
+    $('#status-filter').val(statusParam);
+  }
+
+  $('#status-filter').change(function() {
+    const selectedStatus = $(this).val();
+    
+    const url = new URL(window.location.href);
+    if (selectedStatus === 'all') {
+      url.searchParams.delete('status');
+    } else {
+      url.searchParams.set('status', selectedStatus);
+    }
+    
+    window.location.href = url.toString();
+  });
+});
+
+$(document).ready(function() {
+  // Фильтр статус заявка
+  const urlParams = new URLSearchParams(window.location.search);
+  const statusParam = urlParams.get('status');
+  if (statusParam) {
+    $('#status-filter').val(statusParam);
+  }
+
+  $('#status-filter').change(function() {
+    const selectedStatus = $(this).val();
+    
+    const url = new URL(window.location.href);
+    if (selectedStatus === 'all') {
+      url.searchParams.delete('status');
+    } else {
+      url.searchParams.set('status', selectedStatus);
+    }
+
+    window.location.href = url.toString();
+  });
+});
+
+async function updateRequestStatus(requestId, newStatus) {
+  try {
+    let body = { status: newStatus };
+    
+    if (newStatus === 'отклонено') {
+      const comment = prompt('Укажите причину отклонения:', 'Недостаточно доказательств');
+      if (comment === null) return;
+      body.comment = comment;
+    }
+
+    const response = await fetch(`/api/requests/${requestId}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Не удалось изменить статус');
+    }
+
+    const data = await response.json();
+    
+    const card = document.querySelector(`.request-card[data-id="${requestId}"]`);
+    
+    if (card) {
+      const statusElement = card.querySelector('.request-status');
+      if (statusElement) {
+        statusElement.textContent = `Статус: ${newStatus}`;
+        statusElement.className = `request-status ${newStatus.toLowerCase().replace(/\s+/g, '-')}`;
+      }
+
+    } else {
+      window.location.reload();
+    }
+  } catch (error) {
+    console.error('Ошибка:', error);
+    alert(error.message);
+  }
+}
+
+$(document).on('click', '.req-empl-app', function() {
+  updateRequestStatus($(this).data('id'), 'одобрено');
+});
+
+$(document).on('click', '.req-empl-rej', function() {
+  updateRequestStatus($(this).data('id'), 'отклонено');
+});
+
+$(document).on('click', '.req-empl-rev', function() {
+  updateRequestStatus($(this).data('id'), 'рассматривается');
 });
 
 $(document).ready(function() {
