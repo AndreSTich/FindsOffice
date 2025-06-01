@@ -531,7 +531,6 @@ async function updateResponseStatus(responseId, newStatus) {
     alert(error.message);
   }
 }
-
 // Обработчики кнопок с правильными статусами
 $(document).on('click', '.empl-app', function() {
   updateResponseStatus($(this).data('id'), 'одобрено');

@@ -346,15 +346,30 @@ app.get('/edit-response/:id', requireAuth, async (req, res) => {
       return res.status(404).send('Отклик не найден или у вас нет прав');
     }
 
+    // Обновляем статус отклика на "отправлено" перед редактированием
+    await Response.update(
+      { status: 'отправлено' },
+      { where: { id: req.params.id } }
+    );
+
+    // Получаем обновленные данные отклика
+    const updatedResponse = await Response.findOne({
+      where: { id: req.params.id },
+      include: [
+        { model: Item },
+        { model: Proof, as: 'Proofs' }
+      ]
+    });
+
     res.render('respond', { 
       isEdit: true,
       response: {
-        ...response.get({ plain: true }),
-        proof: response.proof || ''
+        ...updatedResponse.get({ plain: true }),
+        proof: updatedResponse.proof || ''
       },
-      item: response.Item,
-      proofs: response.Proofs || [],
-      user: res.locals.user // Используем пользователя из сессии
+      item: updatedResponse.Item,
+      proofs: updatedResponse.Proofs || [],
+      user: res.locals.user
     });
   } catch (error) {
     console.error(error);
@@ -593,11 +608,17 @@ app.get('/responses', requireAuth, async (req, res) => {
   try {
     const user = await User.findByPk(req.session.userId);
     const isEmployee = user.role === 'сотрудник' || user.role === 'администратор';
+    const statusFilter = req.query.status;
 
     const whereCondition = isEmployee ? {} : { user_id: req.session.userId };
 
+    const responseWhere = {...whereCondition};
+    if (statusFilter && statusFilter !== 'all') {
+      responseWhere.status = statusFilter;
+    }
+
     const responses = await Response.findAll({
-      where: whereCondition,
+      where: responseWhere,
       include: [{
         model: Item,
         required: true
@@ -638,6 +659,13 @@ app.put('/api/responses/:id/status', requireAuth, async (req, res) => {
 
     await Response.update({ status }, { where: { id } });
     
+    if (status === 'одобрено') {
+      await Item.update(
+        { status: 'возвращена' },
+        { where: { id: response.item_id } }
+      );
+    }
+
     const updatedResponse = await Response.findByPk(id, {
       include: [Item]
     });

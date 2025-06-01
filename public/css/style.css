@@ -584,3 +584,37 @@ body.publish-page {
   padding: 8px;
   border: 1px solid darkgray;
 }
+
+.empl-rev{
+  width: 150px;
+  background-color: gold;
+}
+
+.empl-app{
+  width: 150px;
+  background-color:#2ecc71;
+}
+
+.empl-rej{
+  width: 150px;
+  background-color:#e74c3c;
+}
+
+  .filter-section {
+    margin: 15px 0;
+    padding: 15px;
+    background-color: white;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .filter-select {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid lightgrey;
+    font-size: 16px;
+  }
+  
+  

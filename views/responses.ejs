@@ -2,10 +2,22 @@
 
 <div class="requests-container">
   <h2><%= (user.role == "сотрудник") ? 'Отклики' : 'Мои отклики' %></h2>
+
+  <div class="filter-section">
+    <label for="status-filter"><b>Статус отклика:</b></label>
+    <select id="status-filter" class="filter-select">
+      <option value="all">Все статусы</option>
+      <option value="отправлено">Отправлено</option>
+      <option value="рассматривается">Рассматривается</option>
+      <option value="одобрено">Одобрено</option>
+      <option value="отклонено">Отклонено</option>
+    </select>
+  </div>
   
   <% if (responses.length === 0) { %>
     <p style="font-size: 35px; margin-left: 50px;">Нет откликов для отображения</p>
   <% } else { %>
+
     <div id="current-user" 
       data-user-id="<%= user.id %>"
       data-user-role="<%= user.role %>" 
@@ -26,6 +38,9 @@
           <div class="request-info">
             <p style="font-size: 20px; font-weight: bold;"><%= response.Item.title %></p>
             <p class="request-status <%= response.status %>" style="font-size: 16px; font-weight: bold;"> Статус: <%= response.status %></p>
+            <% if (response.status === "отклонено" && user.role == "пользователь") {%>
+              <p style="color:#e74c3c"><b><i>Недостаточно доказательств: отредактируйте отклик с более весомыми доказательствами, возможно прикрепив фото или документ</i></b></p>
+            <% } %>
             <p style="font-size: 18px;"><b>Город:</b> <%= response.Item.city %></p>
             <p style="font-size: 18px;"><b>Дата:</b> <%= new Date(response.Item.date).toLocaleDateString('ru-RU') %></p>
           </div>
@@ -80,6 +95,31 @@
   </div>
   <% } %>
 
-
+  <script>
+    $(document).ready(function() {
+      // Устанавливаем выбранное значение из URL параметра
+      const urlParams = new URLSearchParams(window.location.search);
+      const statusParam = urlParams.get('status');
+      if (statusParam) {
+        $('#status-filter').val(statusParam);
+      }
+  
+      // Обработчик изменения выпадающего списка
+      $('#status-filter').change(function() {
+        const selectedStatus = $(this).val();
+        
+        // Обновляем URL с новым параметром status
+        const url = new URL(window.location.href);
+        if (selectedStatus === 'all') {
+          url.searchParams.delete('status');
+        } else {
+          url.searchParams.set('status', selectedStatus);
+        }
+        
+        // Перезагружаем страницу с новым URL
+        window.location.href = url.toString();
+      });
+    });
+  </script>
 
 <%- include('partials/footer') %>
