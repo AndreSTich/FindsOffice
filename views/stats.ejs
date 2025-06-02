@@ -1,0 +1,63 @@
+<%- include('partials/header') %>
+
+<body style="background-color: #2c3e50;">
+<div class="stats-container">
+    <h1>Статистика системы</h1>
+    
+    <div class="stats-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Показатель</th>
+                    <th>Количество</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Всего вещей в системе</td>
+                    <td><%= stats.items %></td>
+                </tr>
+                <tr>
+                    <td>Всего откликов</td>
+                    <td><%= stats.responses %></td>
+                </tr>
+                <tr>
+                    <td>Всего заявок</td>
+                    <td><%= stats.requests %></td>
+                </tr>
+                <tr>
+                    <td>Найденных вещей</td>
+                    <td><%= stats.foundItems %></td>
+                </tr>
+                <tr>
+                    <td>Утерянных вещей</td>
+                    <td><%= stats.lostItems %></td>
+                </tr>
+                <tr>
+                    <td>Выданных вещей</td>
+                    <td><%= stats.returnedItems %></td>
+                </tr>
+                <tr>
+                    <td>Утилизированных вещей</td>
+                    <td><%= stats.utilizedItems %></td>
+                </tr>
+                <tr>
+                    <td>Всего пользователей</td>
+                    <td><%= stats.users %></td>
+                </tr>
+                <tr>
+                    <td>Сотрудников</td>
+                    <td><%= stats.employees %></td>
+                </tr>
+                <tr>
+                    <td>Администраторов</td>
+                    <td><%= stats.admins %></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+
+
+<%- include('partials/footer') %>

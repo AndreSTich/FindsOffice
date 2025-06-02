@@ -38,6 +38,7 @@
                 <p style="font-size: 18px;"><b>Город:</b> <%= item.city %></p>
                 <p style="font-size: 18px;"><b>Дата:</b> <%= new Date(item.date).toLocaleDateString('ru-RU') %></p>
                 <p style="font-size: 18px; color: #e74c3c;"><b>Срок хранения истек:</b> <%= new Date(item.storage_days).toLocaleDateString('ru-RU') %></p>
+                <% if (currentFilter === 'Невостребованные вещи') { %><p class="item-status <%= item.status %>"><strong>Статус:</strong> <%= item.status %></p> <% } %>
                 
                 <% if (currentFilter === 'Утилизированные вещи' && item.Cancellations && item.Cancellations.length > 0) { %>
                   <% const cancellation = item.Cancellations[0]; %>

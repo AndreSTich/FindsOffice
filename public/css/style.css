@@ -671,3 +671,39 @@ body.publish-page {
   padding-top: 15px;
   border-top: 1px solid #2c3e50;
 }
+
+.stats-container {
+  max-width: 800px;
+  margin: 30px auto;
+  padding: 20px;
+  background: white;
+}
+
+.stats-container h1 {
+  text-align: center;
+  color: black;
+  margin-bottom: 30px;
+}
+
+.stats-table {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 auto;
+}
+
+th, td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid lightgray;
+}
+
+th {
+  background-color: lightgray;
+  font-weight: 600;
+  color: #333;
+}

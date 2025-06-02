@@ -51,7 +51,7 @@
             <button class="edit-request-btn" data-id="<%= request.id %>">Редактировать</button>
             <button class="delete-request-btn" data-id="<%= request.id %>">Удалить</button>
           </div>
-          <% } else {%>
+          <% } else if (user.role=="сотрудник") {%>
             <div class="request-actions">
               <button class="req-empl-rev" data-id="<%= request.id %>">Рассмотреть</button>
               <button class="req-empl-app" data-id="<%= request.id %>">Одобрить</button>

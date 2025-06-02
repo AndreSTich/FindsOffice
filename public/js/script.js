@@ -720,3 +720,12 @@ $(document).ready(function() {
     showModal($(this), '#item-modal');
   });
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.link').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const filter = e.target.getAttribute('data-filter');
+      window.location.href = `/disposal?filter=${encodeURIComponent(filter)}`;
+    });
+  });
+});

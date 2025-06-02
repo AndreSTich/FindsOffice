@@ -874,6 +874,33 @@ app.post('/api/items/:id/utilize', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/stats', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.session.userId);
+    if (user.role !== 'администратор') {
+      return res.status(403).send('Доступ запрещен');
+    }
+
+    const stats = {
+      items: await Item.count(),
+      responses: await Response.count(),
+      requests: await Request.count(),
+      foundItems: await Item.count({ where: { type: 'found' } }),
+      lostItems: await Item.count({ where: { type: 'lost' } }),
+      returnedItems: await Item.count({ where: { status: 'возвращена' } }),
+      utilizedItems: await Item.count({ where: { status: 'утилизирована' } }),
+      users: await User.count(),
+      employees: await User.count({ where: { role: 'сотрудник' } }),
+      admins: await User.count({ where: { role: 'администратор' } })
+    };
+
+    res.render('stats', { stats, user });
+  } catch (error) {
+    console.error('Ошибка при загрузке статистики:', error);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
   console.log(`Сервер запущен на порту ${PORT}`);
