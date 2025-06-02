@@ -27,6 +27,7 @@ const Request = require('./models/Request')(sequelize, DataTypes);
 const Response = require('./models/Response')(sequelize, DataTypes);
 const Proof = require('./models/Proof')(sequelize, DataTypes);
 const User = require('./models/User')(sequelize, DataTypes);
+const Cancellation = require('./models/Cancellation')(sequelize, DataTypes);
 
 Item.hasMany(Request, { foreignKey: 'item_id' });
 Request.belongsTo(Item, { foreignKey: 'item_id' });
@@ -40,6 +41,12 @@ Proof.belongsTo(Response, { foreignKey: 'response_id' });
 
 User.hasMany(Request, { foreignKey: 'user_id' });
 User.hasMany(Response, { foreignKey: 'user_id' });
+
+Item.hasMany(Cancellation, { foreignKey: 'item_id' });
+Cancellation.belongsTo(Item, { foreignKey: 'item_id' });
+
+User.hasMany(Cancellation, { foreignKey: 'employee_id' });
+Cancellation.belongsTo(User, { foreignKey: 'employee_id' });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -793,6 +800,79 @@ app.get('/api/items/:id', async (req, res) => {
   }
 });
 
+
+app.get('/disposal', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.session.userId);
+    if (user.role !== 'сотрудник' && user.role !== 'администратор') {
+      return res.status(403).send('Доступ запрещен');
+    }
+
+    const filter = req.query.filter || 'Невостребованные вещи'; // Получаем параметр фильтра
+
+    let items;
+    if (filter === 'Утилизированные вещи') {
+      // Запрос для утилизированных вещей
+      items = await Item.findAll({
+        where: { status: 'утилизирована' },
+        include: [{
+          model: Cancellation,
+          include: [{ 
+            model: User,
+            attributes: ['first_name', 'last_name'] 
+          }]
+        }],
+        order: [['storage_days', 'ASC']]
+      });
+    } else {
+      // Запрос для невостребованных вещей
+      items = await Item.findAll({
+        where: {
+          storage_days: { [Sequelize.Op.lt]: new Date() },
+          status: { [Sequelize.Op.not]: ['рассматривается', 'утилизирована'] }
+        },
+        order: [['storage_days', 'ASC']]
+      });
+    }
+
+    res.render('disposal', { 
+      items, 
+      user,
+      currentFilter: filter // Передаем текущий фильтр в шаблон
+    });
+  } catch (error) {
+    console.error('Ошибка:', error);
+    res.status(500).send('Ошибка сервера');
+  }
+});
+
+app.post('/api/items/:id/utilize', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.session.userId);
+    if (user.role !== 'сотрудник' && user.role !== 'администратор') {
+      return res.status(403).json({ error: 'Доступ запрещен' });
+    }
+
+    const { reason } = req.body;
+    
+    await Item.update(
+      { status: 'утилизирована' },
+      { where: { id: req.params.id } }
+    );
+
+    await Cancellation.create({
+      item_id: req.params.id,
+      employee_id: req.session.userId,
+      reason: reason,
+      date: new Date()
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Ошибка:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {

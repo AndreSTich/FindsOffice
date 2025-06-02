@@ -1,0 +1,101 @@
+<%- include('partials/header') %>
+
+<div class="requests-container">
+    <div>
+        <button class="link <%= currentFilter === 'Невостребованные вещи' ? 'active' : '' %>" 
+            data-filter="Невостребованные вещи">
+        Невостребованные вещи
+        </button>
+        <button class="link <%= currentFilter === 'Утилизированные вещи' ? 'active' : '' %>" 
+            data-filter="Утилизированные вещи">
+        Утилизированные вещи
+        </button>
+    </div>
+  
+    <% if (items.length === 0) { %>
+        <p style="font-size: 35px; margin-left: 50px;">Нет вещей для отображения</p>
+    <% } else { %>
+      <div id="current-user" 
+           data-user-id="<%= user.id %>"
+           data-user-role="<%= user.role %>" 
+           style="display: none;">
+      </div>
+  
+      <div class="requests-list">
+        <% items.forEach(item => { %>
+          <div class="request-card" data-id="<%= item.id %>" data-location="<%= item.location %>" data-category="<%= item.category %>" data-description="<%= item.description %>">
+            <div class="request-content">
+              <div class="request-image">
+                <% if (item.photo_path) { %>
+                  <img src="/uploads/<%= item.photo_path %>" alt="<%= item.title %>">
+                <% } else { %>
+                  <div class="no-image">Нет фото</div>
+                <% } %>
+              </div>
+              
+              <div class="request-info">
+                <p style="font-size: 20px; font-weight: bold;"><%= item.title %></p>
+                <p style="font-size: 18px;"><b>Город:</b> <%= item.city %></p>
+                <p style="font-size: 18px;"><b>Дата:</b> <%= new Date(item.date).toLocaleDateString('ru-RU') %></p>
+                <p style="font-size: 18px; color: #e74c3c;"><b>Срок хранения истек:</b> <%= new Date(item.storage_days).toLocaleDateString('ru-RU') %></p>
+                
+                <% if (currentFilter === 'Утилизированные вещи' && item.Cancellations && item.Cancellations.length > 0) { %>
+                  <% const cancellation = item.Cancellations[0]; %>
+                  <div class="cancellation-info">
+                    <p><b>Причина утилизации:</b> <%= cancellation.reason %></p>
+                    <p><b>Сотрудник:</b> 
+                      <%= cancellation.User.first_name %> <%= cancellation.User.last_name %>
+                    </p>
+                    <p><b>Дата утилизации:</b> <%= new Date(cancellation.date).toLocaleDateString('ru-RU') %></p>
+                  </div>
+                <% } %>
+              </div>
+            </div>
+            
+            <% if (currentFilter === 'Невостребованные вещи') { %>
+              <div class="request-actions">
+                <button class="utilize-btn" data-id="<%= item.id %>">Утилизировать</button>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+</div>
+
+
+<div id="item-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <div class="modal-grid">
+        <div class="modal-image-container">
+          <img id="modal-image" src="" alt="Фото предмета" class="modal-photo">
+        </div>
+        <div class="modal-info">
+          <h2 id="modal-title"></h2>
+          <p><strong>Город:</strong> <span id="modal-city"></span></p>
+          <p><strong>Место:</strong> <span id="modal-location"></span></p>
+          <p><strong>Дата:</strong> <span id="modal-date"></span></p>
+          <p><strong>Категория:</strong> <span id="modal-category"></span></p>
+          <p><strong>Описание:</strong> <span id="modal-description"></span></p>
+          <p><strong>Срок хранения:</strong> <span id="modal-storage"></span></p>
+          <p><strong>Статус:</strong> <span id="modal-status"></span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.link').forEach(button => {
+    button.addEventListener('click', (e) => {
+      const filter = e.target.getAttribute('data-filter');
+      window.location.href = `/disposal?filter=${encodeURIComponent(filter)}`;
+    });
+  });
+});
+</script>
+
+
+<%- include('partials/footer') %>

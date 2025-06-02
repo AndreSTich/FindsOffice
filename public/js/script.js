@@ -144,7 +144,7 @@ async function showModal($card, modalId) {
       status: $card.find('.request-status').text().replace('Статус: ', '') || fullItemData.status,
       type: $card.data('type') || fullItemData.type,
       category: $card.data('category') || $card.find('p:contains("Категория")').text().replace('Категория: ', '') || 'не указана',
-      storage_days: fullItemData.storage_days // Добавляем срок хранения
+      storage_days: fullItemData.storage_days
     };
 
     let additionalData = {};
@@ -679,5 +679,44 @@ $(document).ready(function() {
     const status = $(this).text().replace('Статус: ', '').trim();
     $(this).text('Статус: ' + status);
     $(this).addClass(status.toLowerCase().replace(/\s+/g, '-'));
+  });
+});
+
+$(document).ready(function() {
+  // Обработчик кнопки "Утилизировать"
+  $('.utilize-btn').click(async function() {
+    const itemId = $(this).data('id');
+    const reason = prompt('Укажите причину утилизации:', 'Истек срок хранения');
+    
+    if (reason === null) return;
+    
+    try {
+      const response = await fetch('/api/items/' + itemId + '/utilize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          reason: reason,
+          employee_id: $('#current-user').data('user-id')
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        window.location.reload();
+      } else {
+        alert(result.error || 'Ошибка при утилизации');
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+      alert('Ошибка при утилизации');
+    }
+  });
+
+  $('.request-card').click(function(e) {
+    if ($(e.target).closest('.request-actions').length) return;
+    showModal($(this), '#item-modal');
   });
 });
