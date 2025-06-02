@@ -18,6 +18,9 @@ body {
     padding: 1rem;
     background: #f4f4f4;
     margin-bottom: 1rem;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
   }
   
   .filter-group {
@@ -203,7 +206,7 @@ body {
   padding: 8px 16px;
   border-radius: 4px;
   font-size: 16px;
-  margin-left: 425px;
+  margin-left: auto;
 }
 
 .publish-container {
@@ -620,4 +623,19 @@ body.publish-page {
     font-size: 16px;
   }
   
-  
+  .item-status.рассматривается{
+    color: gold;
+  }
+
+  .item-status.возвращена{
+    color:#2ecc71;
+  }
+
+  .item-status.утеряна,
+  .item-status.найдена{
+    color:#e74c3c;
+  }
+
+  .item-status.утилизирована{
+    color:#2c3e50;
+  }

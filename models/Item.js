@@ -8,7 +8,7 @@ module.exports = (sequelize, DataTypes) => {
       photo_path: DataTypes.STRING(255),
       category: DataTypes.ENUM('драгоценность', 'электроника', 'документ', 'одежда', 'другое'),
       type: DataTypes.ENUM('found', 'lost'),
-      status: DataTypes.ENUM('на рассмотрении', 'утеряна', 'найдена', 'возвращена', 'утилизирована'),
+      status: DataTypes.ENUM('рассматривается', 'утеряна', 'найдена', 'возвращена', 'утилизирована'),
       storage_days: DataTypes.DATE
     }, {
       tableName: 'Items',

@@ -72,20 +72,27 @@ const requireAuth = (req, res, next) => {
 
 app.get('/', async (req, res) => {
   try {
+    const user = req.session.userId ? await User.findByPk(req.session.userId) : null;
+    
+    const whereCondition = {};
+    
+    if (!user || user.role === 'пользователь') {
+      whereCondition.status = {
+        [Sequelize.Op.or]: ['найдена', 'утеряна']
+      };
+    }
+
     const items = await Item.findAll({
-      where: {
-        status: {
-          [Sequelize.Op.not]: 'на рассмотрении'
-        }
-      }
+      where: whereCondition,
+      order: [['date', 'DESC']]
     });
 
     res.render('index', { 
       items,
-      user: req.session.userId ? await User.findByPk(req.session.userId) : null
+      user: user
     });
   } catch (error) {
-    console.error(error);
+    console.error('Ошибка при загрузке главной страницы:', error);
     res.status(500).send('Ошибка сервера');
   }
 });
@@ -110,7 +117,7 @@ app.post('/publish', requireAuth, async (req, res) => {
       photo_path: photo,
       category,
       type,
-      status: 'на рассмотрении',
+      status: 'рассматривается',
     });
 
     await Request.create({
@@ -244,7 +251,7 @@ app.delete('/api/requests/:id', requireAuth, async (req, res) => {
       return res.status(404).json({ error: 'Заявка не найдена или у вас нет прав' });
     }
 
-    if (request.Item && request.Item.status === 'на рассмотрении') {
+    if (request.Item && request.Item.status === 'рассматривается') {
       await Item.destroy({ where: { id: request.Item.id } });
     }
     await Request.destroy({ where: { id: req.params.id } });
@@ -330,7 +337,7 @@ app.post('/update-request/:id', requireAuth, async (req, res) => {
       photo_path: photo || existing_photo,
       category,
       type,
-      status: 'на рассмотрении'
+      status: 'рассматривается'
     });
 
     await Request.update(
@@ -749,7 +756,7 @@ app.put('/api/requests/:id/status', requireAuth, async (req, res) => {
       );
     } else if (status === 'отклонено') {
       await Item.update(
-        { status: 'на рассмотрении' },
+        { status: 'рассматривается' },
         { where: { id: request.item_id } }
       );
     }
@@ -770,6 +777,19 @@ app.put('/api/requests/:id/status', requireAuth, async (req, res) => {
       error: 'Ошибка сервера',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
+  }
+});
+
+app.get('/api/items/:id', async (req, res) => {
+  try {
+    const item = await Item.findByPk(req.params.id);
+    if (!item) {
+      return res.status(404).json({ error: 'Предмет не найден' });
+    }
+    res.json(item);
+  } catch (error) {
+    console.error('Ошибка при получении данных о предмете:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 

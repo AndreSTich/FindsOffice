@@ -38,6 +38,20 @@
     </select>
   </div>
 
+  <% if (user && (user.role == "администратор" || user.role == "сотрудник")) {%>
+  <div class="filter-group">
+    <label for="status-filter-main">Статус:</label>
+    <select id="status-filter-main">
+      <option value="all">Все</option>
+      <option value="рассматривается">На рассмотрении</option>
+      <option value="найдена">Найденные</option>
+      <option value="утеряна">Потерянные</option>
+      <option value="возвращена">Возвращенные</option>
+      <option value="утилизирована">Невостребованные</option>
+    </select>
+  </div>
+  <% } %>
+
   <div class="filter-group">
     <button id="publish-btn" class="publish-button">Опубликовать</button>
   </div>
@@ -54,6 +68,7 @@
       data-type="<%= item.type %>" 
       data-city="<%= item.city %>" 
       data-category="<%= item.category %>"
+      data-status="<%= item.status %>"
       data-description="<%= item.description %>">
       
       <div class="item-image">
@@ -72,6 +87,9 @@
         </p>
         <p><strong>Место:</strong> <%= item.location || 'Не указано' %></p>
         <p><strong>Дата:</strong> <%= new Date(item.date).toLocaleDateString() %></p>
+        <% if (user && (user.role === "сотрудник" || user.role === "администратор")) {%>
+        <p class="item-status <%= item.status %>"><strong>Статус:</strong> <%= item.status %></p>
+        <%}%>
       </div>
     </div>
   <% }); %>
@@ -91,7 +109,12 @@
         <p><strong>Дата:</strong> <span id="modal-date"></span></p>
         <p><strong>Категория:</strong> <span id="modal-category"></span></p>
         <p><strong>Описание:</strong> <span id="modal-description"></span></p>
+        <% if(!user || user.role == "пользователь") { %>
         <button id="respond-btn" class="respond-button" data-item-id="">Откликнуться</button>
+        <% } else { %>
+          <p><strong>Срок хранения:</strong> <span id="modal-storage"></span></p>
+          <p><strong>Статус:</strong> <span id="modal-status"></span></p>
+        <% } %>
       </div>
     </div>
   </div>

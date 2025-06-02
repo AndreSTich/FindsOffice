@@ -36,7 +36,7 @@ $(document).ready(function() {
     });
 
     // Обработчики фильтров
-    $('#city-filter, #category-filter').on('change', applyFilters);
+    $('#city-filter, #category-filter, #status-filter-main').on('change', applyFilters);
     $('#search-input').on('input', applyFilters);
 
     // Обработчик кнопки "Зарегистрироваться" на странице входа
@@ -48,6 +48,7 @@ $(document).ready(function() {
     // Применение фильтров при загрузке страницы
     applyFilters();
 });
+
 
 // Функция проверки статуса авторизации
 function checkAuthStatus() {
@@ -62,40 +63,44 @@ function checkAuthStatus() {
 
 // Функция применения фильтров
 function applyFilters() {
-    const currentType = $('.type-btn.active').data('type') || 'all';
-    const cityFilter = $('#city-filter').val();
-    const categoryFilter = $('#category-filter').val();
-    const searchText = $('#search-input').val().toLowerCase().trim();
-    
-    let hasVisibleItems = false;
-    
-    $('.item-card').each(function() {
-        const $card = $(this);
-        const itemType = $card.data('type');
-        const itemCity = $card.data('city');
-        const itemCategory = $card.data('category');
-        const title = $card.find('h3').text().toLowerCase();
-        const description = $card.data('description').toLowerCase();
-        
-        const typeMatch = currentType === 'all' || itemType === currentType;
-        const cityMatch = cityFilter === 'all' || itemCity === cityFilter;
-        const categoryMatch = categoryFilter === 'all' || itemCategory === categoryFilter;
-        const searchMatch = searchText === '' || title.includes(searchText);
-        
-        const isVisible = typeMatch && cityMatch && categoryMatch && searchMatch;
-        $card.toggle(isVisible);
-        if (searchText && isVisible) {
+  const currentType = $('.type-btn.active').data('type') || 'all';
+  const cityFilter = $('#city-filter').val();
+  const categoryFilter = $('#category-filter').val();
+  const statusFilter = $('#status-filter-main').val() || 'all';
+  const searchText = $('#search-input').val().toLowerCase().trim();
+
+  let hasVisibleItems = false;
+  
+  $('.item-card').each(function() {
+      const $card = $(this);
+      const itemType = $card.data('type');
+      const itemCity = $card.data('city');
+      const itemCategory = $card.data('category');
+      const itemStatus = $card.data('status');
+      const title = $card.find('h3').text().toLowerCase();
+      const description = $card.data('description').toLowerCase();
+      
+      const typeMatch = currentType === 'all' || itemType === currentType;
+      const cityMatch = cityFilter === 'all' || itemCity === cityFilter;
+      const categoryMatch = categoryFilter === 'all' || itemCategory === categoryFilter;
+      const statusMatch = statusFilter === 'all' || itemStatus === statusFilter;
+      const searchMatch = searchText === '' || 
+                        title.includes(searchText) || 
+                        description.includes(searchText);
+      
+      const isVisible = typeMatch && cityMatch && categoryMatch && statusMatch && searchMatch;
+      $card.toggle(isVisible);
+      
+      if (searchText && isVisible) {
           highlightText($card.find('h3'), searchText);
       } else {
           removeHighlights($card);
       }
-      
+    
       if (isVisible) hasVisibleItems = true;
   });
   
   $('#no-results-message').toggle(!hasVisibleItems);
-    
-    $('#no-results-message').toggle(!hasVisibleItems);
 }
 
 function highlightText($element, searchText) {
@@ -119,23 +124,27 @@ async function showModal($card, modalId) {
     const itemId = $card.data('id');
     const userId = $card.data('userId') || $('#current-user-id').data('userId');
     
+    const itemResponse = await fetch(`/api/items/${itemId}`);
+    const fullItemData = await itemResponse.json();
+    
     const itemData = {
       id: itemId,
-      title: $card.find('h3').text(),
+      title: $card.find('h3').text() || fullItemData.title,
       city: isRequest || isResponse 
         ? $card.find('p:contains("Город")').text().replace('Город: ', '')
-        : $card.data('city'),
+        : $card.data('city') || fullItemData.city,
       location: isRequest || isResponse
         ? $card.data('location') || 'не указано'
         : $card.find('p:contains("Место:")').text().replace('Место: ', '') || 'не указано',
       date: isRequest || isResponse
         ? $card.find('p:contains("Дата")').text().replace('Дата: ', '')
         : $card.find('p:contains("Дата:")').text().replace('Дата: ', ''),
-      description: $card.data('description') || 'Описание отсутствует',
-      photo: $card.find('img').attr('src') || '',
-      status: $card.find('.request-status').text().replace('Статус: ', '') || null,
-      type: $card.data('type'),
-      category: $card.data('category') || $card.find('p:contains("Категория")').text().replace('Категория: ', '') || 'не указана'
+      description: $card.data('description') || fullItemData.description || 'Описание отсутствует',
+      photo: $card.find('img').attr('src') || fullItemData.photo_path || '',
+      status: $card.find('.request-status').text().replace('Статус: ', '') || fullItemData.status,
+      type: $card.data('type') || fullItemData.type,
+      category: $card.data('category') || $card.find('p:contains("Категория")').text().replace('Категория: ', '') || 'не указана',
+      storage_days: fullItemData.storage_days // Добавляем срок хранения
     };
 
     let additionalData = {};
@@ -154,7 +163,21 @@ async function showModal($card, modalId) {
     $modal.find('#modal-date').text(itemData.date);
     $modal.find('#modal-description').text(itemData.description);
     $modal.find('#modal-category').text(itemData.category);
+    $modal.find('#modal-status').text(itemData.status);
     
+    if (modalId === '#item-modal') {
+      if (itemData.storage_days) {
+        const storageDate = new Date(itemData.storage_days).toLocaleDateString('ru-RU');
+        $modal.find('#modal-storage').text(storageDate);
+      } else {
+        $modal.find('#modal-storage').text('не указан');
+      }
+      
+      $modal.find('#modal-status').text(itemData.status)
+        .removeClass()
+        .addClass(`status-badge ${itemData.status.toLowerCase().replace(/\s+/g, '-')}`);
+    }
+
     if (modalId === '#response-modal') {
       $modal.find('#modal-proof-text').text(additionalData.proof);
       
