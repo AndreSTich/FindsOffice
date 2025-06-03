@@ -800,6 +800,34 @@ app.get('/api/items/:id', async (req, res) => {
   }
 });
 
+app.get('/api/res-items/:id', async (req, res) => {
+  try {
+    const temp = await Response.findByPk(req.params.id);
+    const item = await Item.findByPk(temp.item_id);
+    if (!item) {
+      return res.status(404).json({ error: 'Предмет не найден' });
+    }
+    res.json(item);
+  } catch (error) {
+    console.error('Ошибка при получении данных о предмете:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+app.get('/api/req-items/:id', async (req, res) => {
+  try {
+    const temp = await Request.findByPk(req.params.id);
+    const item = await Item.findByPk(temp.item_id);
+    if (!item) {
+      return res.status(404).json({ error: 'Предмет не найден' });
+    }
+    res.json(item);
+  } catch (error) {
+    console.error('Ошибка при получении данных о предмете:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
 
 app.get('/disposal', requireAuth, async (req, res) => {
   try {
@@ -898,6 +926,32 @@ app.get('/stats', requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Ошибка при загрузке статистики:', error);
     res.status(500).send('Ошибка сервера');
+  }
+});
+
+app.delete('/api/items/:id/delete', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.session.userId);
+    
+    if (user.role !== 'администратор' && user.role !== 'сотрудник') {
+      return res.status(403).json({ error: 'Недостаточно прав' });
+    }
+
+    const item = await Item.findByPk(req.params.id);
+    if (!item) {
+      return res.status(404).json({ error: 'Вещь не найдена' });
+    }
+
+    await Request.destroy({ where: { item_id: item.id } });
+    await Response.destroy({ where: { item_id: item.id } });
+    await Cancellation.destroy({ where: { item_id: item.id } });
+
+    await item.destroy();
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Ошибка при удалении вещи:', error);
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 

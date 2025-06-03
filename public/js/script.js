@@ -124,7 +124,16 @@ async function showModal($card, modalId) {
     const itemId = $card.data('id');
     const userId = $card.data('userId') || $('#current-user-id').data('userId');
     
-    const itemResponse = await fetch(`/api/items/${itemId}`);
+    var itemResponse
+    if (modalId === "#request-modal"){
+      itemResponse = await fetch(`/api/req-items/${itemId}`);
+    }
+    else if (modalId === "#response-modal"){
+      itemResponse = await fetch(`/api/res-items/${itemId}`);
+    }
+    else{
+      itemResponse = await fetch(`/api/items/${itemId}`);
+    }
     const fullItemData = await itemResponse.json();
     
     const itemData = {
@@ -729,3 +738,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+

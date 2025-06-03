@@ -51,10 +51,12 @@
     </select>
   </div>
   <% } %>
-
+  
+  <% if (!(user) || user.role == "пользователь") {%>
   <div class="filter-group">
     <button id="publish-btn" class="publish-button">Опубликовать</button>
   </div>
+  <% } %>
 </section>
 
 <div id="no-results-message" style="display: none;">
@@ -89,6 +91,7 @@
         <p><strong>Дата:</strong> <%= new Date(item.date).toLocaleDateString() %></p>
         <% if (user && (user.role === "сотрудник" || user.role === "администратор")) {%>
         <p class="item-status <%= item.status %>"><strong>Статус:</strong> <%= item.status %></p>
+        <button class="delete-btn" data-id="<%= item.id %>">Удалить</button>
         <%}%>
       </div>
     </div>
@@ -119,6 +122,55 @@
     </div>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+  const deleteButtons = document.querySelectorAll('.delete-btn');
+  
+  deleteButtons.forEach(button => {
+    button.addEventListener('click', async (e) => {
+      const itemId = e.target.getAttribute('data-id') || e.target.closest('.item-card').getAttribute('data-id');
+      
+      if (!itemId) {
+        alert('Ошибка: ID предмета не найден');
+        return;
+      }
+
+      if (!confirm('Вы уверены, что хотите удалить эту вещь?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/items/${itemId}/delete`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          const itemCard = e.target.closest('.item-card');
+          itemCard.remove();
+
+          const remainingCards = document.querySelectorAll('.item-card');
+          if (remainingCards.length === 0) {
+            document.getElementById('no-results-message').style.display = 'block';
+          }
+
+          alert('Вещь успешно удалена');
+        } else {
+          alert(data.error || 'Ошибка при удалении вещи');
+        }
+      } catch (error) {
+        console.error('Ошибка при удалении:', error);
+        alert('Произошла ошибка при удалении вещи');
+      }
+    });
+  });
+});
+</script>
 
 <% if (user) { %>
   <script>

@@ -707,3 +707,15 @@ th {
   font-weight: 600;
   color: #333;
 }
+
+.delete-btn {
+  padding: 10px 20px;
+  background-color: #e74c3c;
+  color: white;
+  border: 1px solid #2c3e50;
+  border-radius: 4px;
+  margin-top: 15px;
+  transition: background-color 0.3s;
+  width: 140px;
+  font-size: 16px;
+}

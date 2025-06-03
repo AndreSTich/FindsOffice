@@ -12,6 +12,13 @@ module.exports = (sequelize, DataTypes) => {
       storage_days: DataTypes.DATE
     }, {
       tableName: 'Items',
-      timestamps: false
+      timestamps: false,
+      hooks: {
+        beforeDestroy: async (item, options) => {
+          await sequelize.models.Request.destroy({ where: { item_id: item.id } });
+          await sequelize.models.Response.destroy({ where: { item_id: item.id } });
+          await sequelize.models.Cancellation.destroy({ where: { item_id: item.id } });
+        }
+      }
     });
   };
